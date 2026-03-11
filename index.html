@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Red Ball POS</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+color:white;
+text-align:center;
+
+background:
+linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95)),
+url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
+
+background-size:cover;
+background-position:center;
+}
+
+h1{
+margin-top:30px;
+font-size:38px;
+color:#6ed8ff;
+
+text-shadow:
+0 0 10px #6ed8ff,
+0 0 20px #ff4de1;
+}
+
+.section{
+margin:40px auto;
+max-width:1000px;
+}
+
+.grid{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:16px;
+padding:10px;
+}
+
+.card{
+width:180px;
+background:#161616;
+border:1px solid #333;
+border-radius:12px;
+padding:14px;
+transition:0.2s;
+}
+
+.card.active{
+box-shadow:
+0 0 12px white,
+0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
+.title{
+font-size:15px;
+}
+
+.price{
+font-size:12px;
+color:#ff6bf2;
+}
+
+.controls{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-top:10px;
+}
+
+.btn{
+background:#222;
+border:1px solid #555;
+color:white;
+width:32px;
+height:32px;
+border-radius:6px;
+cursor:pointer;
+font-size:18px;
+}
+
+.qty{
+font-size:18px;
+color:#6ed8ff;
+width:30px;
+}
+
+.total{
+font-size:30px;
+margin-top:20px;
+color:#6ed8ff;
+
+text-shadow:
+0 0 10px #6ed8ff,
+0 0 20px #ff4de1;
+}
+
+.options{
+margin-top:25px;
+}
+
+.tip-row{
+display:flex;
+justify-content:center;
+flex-wrap:wrap;
+gap:10px;
+margin-top:10px;
+}
+
+button.main{
+background:#ff4de1;
+border:none;
+padding:10px 18px;
+margin:6px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+min-width:80px;
+}
+
+.tip-active{
+box-shadow:
+0 0 12px white,
+0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
+.manual-input{
+background:transparent;
+border:none;
+color:white;
+text-align:center;
+width:60px;
+font-size:16px;
+outline:none;
+}
+
+.footer{
+margin-top:60px;
+font-size:12px;
+opacity:0.7;
+direction:rtl;
+}
+
+#orderPanel{
+position:fixed;
+right:10px;
+top:120px;
+width:220px;
+background:#111;
+border:1px solid #444;
+border-radius:10px;
+padding:10px;
+text-align:right;
+direction:rtl;
+}
+
+#orderList{
+font-size:14px;
+line-height:1.6;
+}
+
+.orderItem{
+border-bottom:1px solid #333;
+padding:4px 0;
+}
+
+/* מובייל */
+
+@media (max-width:700px){
+
+h1{
+font-size:28px;
+margin-top:20px;
+}
+
+.section{
+margin:25px auto;
+}
+
+.grid{
+gap:12px;
+padding:6px;
+}
+
+.card{
+width:140px;
+padding:10px;
+}
+
+.title{
+font-size:14px;
+}
+
+.price{
+font-size:11px;
+}
+
+.controls{
+gap:6px;
+}
+
+.btn{
+width:36px;
+height:36px;
+font-size:18px;
+}
+
+.qty{
+font-size:18px;
+}
+
+button.main{
+padding:12px 14px;
+font-size:14px;
+}
+
+.tip-row{
+gap:8px;
+}
+
+.total{
+font-size:26px;
+margin-top:18px;
+}
+
+#orderPanel{
+position:static;
+width:90%;
+margin:20px auto;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎳🎱 Red Ball 🎱🎳</h1>
+
+<div id="orderPanel">
+<h3>הזמנה</h3>
+<div id="orderList"></div>
+</div>
+
+<div id="menu"></div>
+
+<div class="options">
+
+<h3>טיפ</h3>
+
+<div class="tip-row">
+
+<button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
+<button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
+<button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
+<button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+
+<button class="main tip-btn" id="manualTipBtn" onclick="activateManualTip(this)">
+טיפ ידני
+</button>
+
+</div>
+
+<h3>הנחה</h3>
+
+<label>
+<input type="checkbox" id="discount" onchange="updateTotal()">
+הנחת מד״א / משטרה (50%)
+</label>
+
+</div>
+
+<div class="total" id="total">סה"כ: 0</div>
+
+<div>
+<button class="main" onclick="copyOrder()">העתק הזמנה</button>
+<button class="main" onclick="resetAll()">איפוס</button>
+</div>
+
+<div class="footer">
+כל הזכויות שמורות ל-Messineo על בניית האפליקציה
+<br><br><br><br>
+</div>
+
+<script>
+
+/* כל ה-JS שלך נשאר בדיוק אותו דבר */
+
+</script>
+
+</body>
+</html>
