@@ -333,7 +333,7 @@ btn.classList.add("tip-active")
 
 manualActive=true
 
-btn.innerHTML=`<input id="manualInput" class="manual-input" type="number" placeholder="₪">`
+btn.innerHTML=`<input id="manualInput" class="manual-input" type="number" inputmode="numeric" placeholder="₪">`
 
 let input=document.getElementById("manualInput")
 input.focus()
@@ -341,8 +341,19 @@ input.focus()
 input.oninput=function(){
 tipPercent=0
 tipValue=Number(this.value)
-btn.innerHTML="₪"+this.value
 updateTotal()
+}
+
+input.onblur=function(){
+
+if(this.value){
+btn.innerHTML="₪"+this.value
+}else{
+btn.innerHTML="טיפ ידני"
+tipValue=0
+updateTotal()
+}
+
 }
 
 }
