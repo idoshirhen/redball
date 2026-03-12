@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>Red Ball POS</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+color:white;
+text-align:center;
+
+background:
+linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95)),
+url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
+
+background-size:cover;
+background-position:center;
+}
+
+h1{
+margin-top:30px;
+font-size:38px;
+color:#6ed8ff;
+
+text-shadow:
+0 0 10px #6ed8ff,
+0 0 20px #ff4de1;
+}
+
+.section{
+margin:40px auto;
+max-width:1000px;
+}
+
+.grid{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:16px;
+padding:10px;
+}
+
+.card{
+width:180px;
+background:#161616;
+border:1px solid #333;
+border-radius:12px;
+padding:14px;
+transition:0.2s;
+}
+
+.card.active{
+box-shadow:
+0 0 12px white,
+0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
+.title{
+font-size:15px;
+}
+
+.price{
+font-size:12px;
+color:#ff6bf2;
+}
+
+.controls{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-top:10px;
+}
+
+.btn{
+background:#222;
+border:1px solid #555;
+color:white;
+width:32px;
+height:32px;
+border-radius:6px;
+cursor:pointer;
+font-size:18px;
+}
+
+.qty{
+font-size:18px;
+color:#6ed8ff;
+width:30px;
+}
+
+.total{
+font-size:30px;
+margin-top:20px;
+color:#6ed8ff;
+
+text-shadow:
+0 0 10px #6ed8ff,
+0 0 20px #ff4de1;
+}
+
+.options{
+margin-top:25px;
+}
+
+.tip-row{
+display:flex;
+justify-content:center;
+flex-wrap:wrap;
+gap:10px;
+margin-top:10px;
+}
+
+button.main{
+background:#ff4de1;
+border:none;
+padding:10px 18px;
+margin:6px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+min-width:80px;
+}
+
+.tip-active{
+box-shadow:
+0 0 12px white,
+0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
+.manual-input{
+background:transparent;
+border:none;
+color:white;
+text-align:center;
+width:60px;
+font-size:16px;
+outline:none;
+}
+
+.footer{
+margin-top:60px;
+font-size:12px;
+opacity:0.7;
+direction:rtl;
+}
+
+#orderPanel{
+position:fixed;
+right:10px;
+top:120px;
+width:220px;
+background:#111;
+border:1px solid #444;
+border-radius:10px;
+padding:10px;
+text-align:right;
+direction:rtl;
+}
+
+#orderList{
+font-size:14px;
+line-height:1.6;
+}
+
+.orderItem{
+border-bottom:1px solid #333;
+padding:4px 0;
+}
+
+#panelTotals{
+margin-top:10px;
+padding-top:8px;
+border-top:1px solid #333;
+font-size:13px;
+line-height:1.8;
+}
+
+.panelLine{
+display:flex;
+justify-content:space-between;
+}
+
+.panelTotalFinal{
+color:#6ed8ff;
+font-size:16px;
+border-top:1px solid #444;
+margin-top:5px;
+padding-top:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎳🎱 Red Ball 🎱🎳</h1>
+
+<div id="orderPanel">
+
+<h3>הזמנה</h3>
+
+<div id="orderList"></div>
+
+<div id="panelTotals">
+
+<div class="panelLine">
+<span>ביניים</span>
+<span id="panelSubtotal">0</span>
+</div>
+
+<div class="panelLine">
+<span>הנחה</span>
+<span id="panelDiscount">0</span>
+</div>
+
+<div class="panelLine">
+<span>טיפ</span>
+<span id="panelTip">0</span>
+</div>
+
+<div class="panelLine panelTotalFinal">
+<span>סה"כ</span>
+<span id="panelTotal">0</span>
+</div>
+
+</div>
+
+</div>
+
+<div id="menu"></div>
+
+<div class="options">
+
+<h3>טיפ</h3>
+
+<div class="tip-row">
+
+<button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
+<button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
+<button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
+<button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+
+<button class="main tip-btn" id="manualTipBtn" onclick="activateManualTip(this)">
+טיפ ידני
+</button>
+
+</div>
+
+<h3>הנחה</h3>
+
+<label>
+<input type="checkbox" id="discount" onchange="updateTotal()">
+הנחת מד״א / משטרה (50%)
+</label>
+
+</div>
+
+<div class="total" id="total">סה"כ: 0</div>
+
+<div>
+<button class="main" onclick="copyOrder()">העתק הזמנה</button>
+<button class="main" onclick="resetAll()">איפוס</button>
+</div>
+
+<div class="footer">
+כל הזכויות שמורות ל-Messineo על בניית האפליקציה
+<br><br><br><br>
+</div>
+
+<script>
+
+const menuData = {
+
+"שתיה קלה":[
+{name:"ברד למבדה",price:200},
+{name:"ברד ענבים",price:200},
+{name:"ברד פטל",price:200},
+{name:"ברד תפוח",price:200},
+{name:"לימונדה",price:200},
+{name:"מיץ פירות",price:200}
+],
+
+"אוכל":[
+{name:"נקניקיה",price:200}
+],
+
+"שתיה חריפה":[
+{name:"וודקה רדבול",price:1000},
+{name:"ויסקי קולה",price:1000},
+{name:"טקילה",price:1000},
+{name:"מוחיטו",price:1000},
+{name:"ג'ין טוניק",price:1000},
+{name:"פינה קולדה",price:1000},
+{name:"מרטיני תפוחים",price:1000},
+{name:"מרטיני לבן",price:1000}
+],
+
+"צייסרים ובירות":[
+{name:"שוט ויסקי",price:600},
+{name:"שוט וודקה",price:600},
+{name:"שוט ייאגר",price:600},
+{name:"בירה קורונה",price:600},
+{name:"בירה הייניקן",price:600}
+],
+
+"בקבוקים":[
+{name:"ויסקי",price:1600},
+{name:"רום",price:1600},
+{name:"וודקה",price:1600},
+{name:"ייגרמייסטר",price:1600}
+],
+
+"נרגילה":[
+{name:"גחל",price:600},
+{name:"טבק נרגילה",price:2000},
+{name:"קומבו נרגילה",price:2600}
+]
+
+}
+
+let cart={}
+let tipPercent=0
+let tipValue=0
+let manualActive=false
+
+let lastSubtotal=0
+let lastDiscount=0
+let lastTotal=0
+
+const container=document.getElementById("menu")
+
+for(let category in menuData){
+
+let section=document.createElement("div")
+section.className="section"
+
+section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`
+
+let grid=section.querySelector(".grid")
+
+menuData[category].forEach(item=>{
+
+cart[item.name]=0
+
+let card=document.createElement("div")
+card.className="card"
+card.id="card_"+item.name
+
+card.innerHTML=`
+<div class="title">${item.name}</div>
+<div class="price">₪${item.price}</div>
+
+<div class="controls">
+<button class="btn" onclick="changeQty('${item.name}',-1)">-</button>
+<div class="qty" id="${item.name}">0</div>
+<button class="btn" onclick="changeQty('${item.name}',1)">+</button>
+</div>
+`
+
+grid.appendChild(card)
+
+})
+
+container.appendChild(section)
+
+}
+
+function activateManualTip(btn){
+
+document.querySelectorAll(".tip-btn").forEach(b=>{
+b.classList.remove("tip-active")
+})
+
+btn.classList.add("tip-active")
+
+manualActive=true
+
+btn.innerHTML=`<input id="manualInput" class="manual-input" type="number" inputmode="numeric" placeholder="₪">`
+
+let input=document.getElementById("manualInput")
+input.focus()
+
+input.oninput=function(){
+tipPercent=0
+tipValue=Number(this.value)
+updateTotal()
+}
+
+input.onblur=function(){
+
+if(this.value){
+btn.innerHTML="₪"+this.value
+}else{
+btn.innerHTML="טיפ ידני"
+tipValue=0
+updateTotal()
+}
+
+}
+
+}
+
+function setTipPercent(p,btn){
+
+manualActive=false
+tipPercent=p
+tipValue=0
+
+let manualBtn=document.getElementById("manualTipBtn")
+manualBtn.innerHTML="טיפ ידני"
+
+document.querySelectorAll(".tip-btn").forEach(b=>{
+b.classList.remove("tip-active")
+})
+
+btn.classList.add("tip-active")
+
+updateTotal()
+
+}
+
+function changeQty(name,amount){
+
+cart[name]+=amount
+if(cart[name]<0) cart[name]=0
+
+document.getElementById(name).innerText=cart[name]
+
+let card=document.getElementById("card_"+name)
+
+if(cart[name]>0){
+card.classList.add("active")
+}else{
+card.classList.remove("active")
+}
+
+updateTotal()
+updateOrderPanel()
+
+}
+
+function updateOrderPanel(){
+
+let panel=document.getElementById("orderList")
+panel.innerHTML=""
+
+for(let category in menuData){
+
+menuData[category].forEach(item=>{
+
+let qty=cart[item.name]
+
+if(qty>0){
+
+let div=document.createElement("div")
+div.className="orderItem"
+div.innerText=item.name+" x"+qty
+
+panel.appendChild(div)
+
+}
+
+})
+
+}
+
+}
+
+function updateTotal(){
+
+let subtotal=0
+
+let softQty=0
+let foodQty=0
+
+menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
+menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
+
+subtotal+=Math.floor(softQty/10)*1000
+subtotal+=(softQty%10)*200
+
+subtotal+=Math.floor(foodQty/10)*1000
+subtotal+=(foodQty%10)*200
+
+for(let category in menuData){
+
+if(category==="שתיה קלה" || category==="אוכל") continue
+
+menuData[category].forEach(item=>{
+subtotal+=cart[item.name]*item.price
+})
+
+}
+
+let originalSubtotal=subtotal
+
+lastDiscount=0
+
+if(document.getElementById("discount").checked){
+lastDiscount=originalSubtotal*0.5
+subtotal=originalSubtotal-lastDiscount
+}
+
+if(tipPercent>0){
+tipValue=subtotal*(tipPercent/100)
+}
+
+lastSubtotal=Math.round(originalSubtotal)
+lastTotal=Math.round(subtotal+tipValue)
+
+document.getElementById("total").innerText="סה\"כ: "+lastTotal
+
+document.getElementById("panelSubtotal").innerText=lastSubtotal
+document.getElementById("panelDiscount").innerText=Math.round(lastDiscount)
+document.getElementById("panelTip").innerText=Math.round(tipValue)
+document.getElementById("panelTotal").innerText=lastTotal
+
+}
+
+function resetAll(){
+
+for(let item in cart){
+
+cart[item]=0
+document.getElementById(item).innerText=0
+
+let card=document.getElementById("card_"+item)
+if(card) card.classList.remove("active")
+
+}
+
+document.getElementById("discount").checked=false
+
+tipPercent=0
+tipValue=0
+
+let manualBtn=document.getElementById("manualTipBtn")
+manualBtn.innerHTML="טיפ ידני"
+
+document.querySelectorAll(".tip-btn").forEach(b=>{
+b.classList.remove("tip-active")
+})
+
+updateTotal()
+updateOrderPanel()
+
+}
+
+function copyOrder(){
+
+let text="הזמנה Red Ball 🎳🎱\n\n"
+
+for(let item in cart){
+
+if(cart[item]>0){
+
+let price=0
+
+for(let category in menuData){
+menuData[category].forEach(i=>{
+if(i.name===item){price=i.price}
+})
+}
+
+let total=price*cart[item]
+
+text+=item+" x"+cart[item]+" ("+total+")\n"
+
+}
+
+}
+
+text+="\nסה\"כ: "+lastSubtotal
+
+if(lastDiscount>0){
+text+="\nהנחת מד״א / משטרה: -"+Math.round(lastDiscount)
+}
+
+if(tipValue>0){
+text+="\nטיפ: "+Math.round(tipValue)
+}
+
+text+="\n\nסה\"כ לתשלום: "+lastTotal
+
+navigator.clipboard.writeText(text)
+
+alert("ההזמנה הועתקה")
+
+}
+
+</script>
+
+</body>
+</html>
