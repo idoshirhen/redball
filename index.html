@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
   
 <style>
-
+/* (השארתי לך את כל ה-CSS כמו שהוא) */
 body{
 font-family:Arial;
 margin:0;
@@ -19,117 +19,22 @@ url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
 background-size:cover;
 background-position:center;
 }
-
-h1{
-margin-top:30px;
-font-size:38px;
-color:#6ed8ff;
-text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
-}
-
-.section{
-margin:40px auto;
-max-width:1000px;
-}
-
-.grid{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:16px;
-padding:10px;
-}
-
-.card{
-width:180px;
-background:#161616;
-border:1px solid #333;
-border-radius:12px;
-padding:14px;
-transition:0.2s;
-}
-
-.card.active{
-box-shadow:0 0 12px white,0 0 20px #6ed8ff;
-border:1px solid #6ed8ff;
-}
-
+h1{margin-top:30px;font-size:38px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
+.section{margin:40px auto;max-width:1000px;}
+.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;}
+.card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}
+.card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
 .title{font-size:15px;}
 .price{font-size:12px;color:#ff6bf2;}
-
-.controls{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:10px;
-margin-top:10px;
-}
-
-.btn{
-background:#222;
-border:1px solid #555;
-color:white;
-width:32px;
-height:32px;
-border-radius:6px;
-cursor:pointer;
-font-size:18px;
-}
-
-.qty{
-font-size:18px;
-color:#6ed8ff;
-width:30px;
-}
-
-.total{
-font-size:30px;
-margin-top:20px;
-color:#6ed8ff;
-text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
-}
-
-button.main{
-background:#ff4de1;
-border:none;
-padding:10px 18px;
-margin:6px;
-border-radius:8px;
-cursor:pointer;
-color:white;
-min-width:90px;
-}
-
-.tip-active{
-box-shadow:0 0 12px white,0 0 20px #6ed8ff;
-border:1px solid #6ed8ff;
-}
-
-#orderPanel{
-position:fixed;
-right:10px;
-top:120px;
-width:240px;
-background:#111;
-border:1px solid #444;
-border-radius:10px;
-padding:10px;
-text-align:right;
-direction:rtl;
-}
-
-.orderItem{
-border-bottom:1px solid #333;
-padding:4px 0;
-}
-
-.footer{
-margin-top:60px;
-font-size:12px;
-opacity:0.7;
-direction:rtl;
-}
-
+.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
+.btn{background:#222;border:1px solid #555;color:white;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;}
+.qty{font-size:18px;color:#6ed8ff;width:30px;}
+.total{font-size:30px;margin-top:20px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
+button.main{background:#ff4de1;border:none;padding:10px 18px;margin:6px;border-radius:8px;cursor:pointer;color:white;min-width:90px;}
+.tip-active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
+#orderPanel{position:fixed;right:10px;top:120px;width:240px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;}
+.orderItem{border-bottom:1px solid #333;padding:4px 0;}
+.footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;}
 </style>
 </head>
 
@@ -138,41 +43,33 @@ direction:rtl;
 <h1>🎳🎱 Red Ball 🎱🎳</h1>
 
 <div id="orderPanel">
-
 <h3>הזמנה</h3>
-
 <div id="orderList"></div>
-
 <hr style="border:1px solid #333;margin:10px 0;">
-
 <div id="orderSummary"></div>
-
 </div>
 
 <div id="menu"></div>
 
 <div>
-
 <h3>טיפ</h3>
-
 <button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
 <button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
 <button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
 <button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
 
 <h3>הנחה</h3>
-
 <label>
 <input type="checkbox" id="discount" onchange="updateTotal()">
 הנחת מד״א (50%)
 </label>
-
 </div>
 
 <div class="total" id="total">סה"כ: 0</div>
 
 <div>
 <button class="main" onclick="copyOrder()">העתק לקבלה</button>
+<button class="main" onclick="copyFullOrder()">העתק להתפקדות</button>
 <button class="main" onclick="resetAll()">איפוס</button>
 </div>
 
@@ -240,26 +137,60 @@ const menuData={
 
 let cart={}
 let tipPercent=0
-let tipValue=0
-let lastSubtotal=0
-let lastDiscount=0
-let lastTotal=0
+
+// 🔥 פונקציה מרכזית לחישוב (כולם משתמשים בה)
+function calculateTotals(){
+
+let subtotal=0
+let softQty=0
+let foodQty=0
+
+menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
+menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
+
+// מבצע שתיה
+subtotal+=Math.floor(softQty/10)*1000
+subtotal+=(softQty%10)*200
+
+// מבצע אוכל
+subtotal+=Math.floor(foodQty/10)*1000
+subtotal+=(foodQty%10)*200
+
+for(let category in menuData){
+if(category==="שתיה קלה" || category==="אוכל") continue
+menuData[category].forEach(item=>{
+subtotal+=cart[item.name]*item.price
+})
+}
+
+let discount=0
+if(document.getElementById("discount").checked){
+discount=subtotal*0.5
+subtotal-=discount
+}
+
+let tip=subtotal*(tipPercent/100)
+let total=subtotal+tip
+
+return {
+subtotal:Math.round(subtotal+discount),
+discount:Math.round(discount),
+tip:Math.round(tip),
+total:Math.round(total)
+}
+
+}
 
 const container=document.getElementById("menu")
 
 for(let category in menuData){
-
 let section=document.createElement("div")
 section.className="section"
-
 section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`
-
 let grid=section.querySelector(".grid")
 
 menuData[category].forEach(item=>{
-
 cart[item.name]=0
-
 let card=document.createElement("div")
 card.className="card"
 card.id="card_"+item.name
@@ -267,168 +198,116 @@ card.id="card_"+item.name
 card.innerHTML=`
 <div class="title">${item.name}</div>
 <div class="price">₪${item.price}</div>
-
 <div class="controls">
 <button class="btn" onclick="changeQty('${item.name}',-1)">-</button>
 <div class="qty" id="${item.name}">0</div>
 <button class="btn" onclick="changeQty('${item.name}',1)">+</button>
-</div>
-`
+</div>`
 
 grid.appendChild(card)
-
 })
 
 container.appendChild(section)
-
 }
 
 function setTipPercent(p,btn){
-
 tipPercent=p
-tipValue=0
-
 document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"))
 btn.classList.add("tip-active")
-
 updateTotal()
-
 }
 
 function changeQty(name,amount){
-
 cart[name]+=amount
 if(cart[name]<0)cart[name]=0
-
 document.getElementById(name).innerText=cart[name]
 
 let card=document.getElementById("card_"+name)
-
 if(cart[name]>0){card.classList.add("active")}
 else{card.classList.remove("active")}
 
 updateTotal()
-
 }
 
 function updateTotal(){
 
-let subtotal=0
+let calc=calculateTotals()
 
-let softQty=0
-let foodQty=0
+document.getElementById("total").innerText="סה\"כ: "+calc.total
 
-menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
-menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
-
-subtotal+=Math.floor(softQty/10)*1000
-subtotal+=(softQty%10)*200
-
-subtotal+=Math.floor(foodQty/10)*1000
-subtotal+=(foodQty%10)*200
-
-for(let category in menuData){
-
-if(category==="שתיה קלה" || category==="אוכל") continue
-
-menuData[category].forEach(item=>{
-subtotal+=cart[item.name]*item.price
-})
-
+updateOrderPanel(calc)
 }
 
-let original=subtotal
-
-lastDiscount=0
-
-if(document.getElementById("discount").checked){
-
-lastDiscount=original*0.5
-subtotal=original-lastDiscount
-
-}
-
-if(tipPercent>0){
-tipValue=subtotal*(tipPercent/100)
-}
-
-lastSubtotal=Math.round(original)
-lastTotal=Math.round(subtotal+tipValue)
-
-document.getElementById("total").innerText="סה\"כ: "+lastTotal
-
-updateOrderPanel()
-
-}
-
-function updateOrderPanel(){
+function updateOrderPanel(calc){
 
 let panel=document.getElementById("orderList")
 panel.innerHTML=""
 
 for(let item in cart){
-
 if(cart[item]>0){
-
 let div=document.createElement("div")
 div.className="orderItem"
 div.innerText=item+" x"+cart[item]
-
 panel.appendChild(div)
-
 }
-
 }
 
 document.getElementById("orderSummary").innerHTML=`
-סיכום ביניים: ₪${lastSubtotal}<br>
-הנחה: ₪-${Math.round(lastDiscount)}<br>
-טיפ: ₪${Math.round(tipValue)}<br>
-<b>לתשלום: ₪${lastTotal}</b>
+סיכום ביניים: ₪${calc.subtotal}<br>
+הנחה: ₪-${calc.discount}<br>
+טיפ: ₪${calc.tip}<br>
+<b>לתשלום: ₪${calc.total}</b>
 `
 
 }
 
 function resetAll(){
-
 for(let item in cart){
-
 cart[item]=0
 document.getElementById(item).innerText=0
-
 let card=document.getElementById("card_"+item)
 if(card)card.classList.remove("active")
-
 }
-
 tipPercent=0
-tipValue=0
-
 document.getElementById("discount").checked=false
-
 document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"))
-
 updateTotal()
-
 }
 
 function copyOrder(){
 
 let items=[]
-
 for(let item in cart){
-
 if(cart[item]>0){
 items.push(item+" x"+cart[item])
 }
+}
+
+navigator.clipboard.writeText(items.join(", "))
+alert("הקבלה הועתקה")
 
 }
 
-let text=items.join(", ")
+function copyFullOrder(){
+
+let lines=[]
+for(let item in cart){
+if(cart[item]>0){
+lines.push(item+" x"+cart[item])
+}
+}
+
+let calc=calculateTotals()
+
+let text=lines.join("\n")
+text+="\n------------------\n"
+text+="סיכום ביניים: ₪"+calc.subtotal+"\n"
+text+="הנחה: ₪-"+calc.discount+"\n"
+text+="טיפ: ₪"+calc.tip+"\n"
+text+="לתשלום: ₪"+calc.total
 
 navigator.clipboard.writeText(text)
-
-alert("ההזמנה הועתקה")
+alert("ההתפקדות הועתקה")
 
 }
 
