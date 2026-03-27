@@ -7,7 +7,6 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
   
 <style>
-/* (השארתי לך את כל ה-CSS כמו שהוא) */
 body{
 font-family:Arial;
 margin:0;
@@ -57,12 +56,6 @@ button.main{background:#ff4de1;border:none;padding:10px 18px;margin:6px;border-r
 <button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
 <button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
 <button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
-
-<h3>הנחה</h3>
-<label>
-<input type="checkbox" id="discount" onchange="updateTotal()">
-הנחת מד״א (50%)
-</label>
 </div>
 
 <div class="total" id="total">סה"כ: 0</div>
@@ -138,7 +131,6 @@ const menuData={
 let cart={}
 let tipPercent=0
 
-// 🔥 פונקציה מרכזית לחישוב (כולם משתמשים בה)
 function calculateTotals(){
 
 let subtotal=0
@@ -148,11 +140,9 @@ let foodQty=0
 menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
 menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
 
-// מבצע שתיה
 subtotal+=Math.floor(softQty/10)*1000
 subtotal+=(softQty%10)*200
 
-// מבצע אוכל
 subtotal+=Math.floor(foodQty/10)*1000
 subtotal+=(foodQty%10)*200
 
@@ -163,18 +153,11 @@ subtotal+=cart[item.name]*item.price
 })
 }
 
-let discount=0
-if(document.getElementById("discount").checked){
-discount=subtotal*0.5
-subtotal-=discount
-}
-
 let tip=subtotal*(tipPercent/100)
 let total=subtotal+tip
 
 return {
-subtotal:Math.round(subtotal+discount),
-discount:Math.round(discount),
+subtotal:Math.round(subtotal),
 tip:Math.round(tip),
 total:Math.round(total)
 }
@@ -230,11 +213,8 @@ updateTotal()
 }
 
 function updateTotal(){
-
 let calc=calculateTotals()
-
 document.getElementById("total").innerText="סה\"כ: "+calc.total
-
 updateOrderPanel(calc)
 }
 
@@ -254,7 +234,6 @@ panel.appendChild(div)
 
 document.getElementById("orderSummary").innerHTML=`
 סיכום ביניים: ₪${calc.subtotal}<br>
-הנחה: ₪-${calc.discount}<br>
 טיפ: ₪${calc.tip}<br>
 <b>לתשלום: ₪${calc.total}</b>
 `
@@ -269,7 +248,6 @@ let card=document.getElementById("card_"+item)
 if(card)card.classList.remove("active")
 }
 tipPercent=0
-document.getElementById("discount").checked=false
 document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"))
 updateTotal()
 }
@@ -300,11 +278,11 @@ lines.push(item+" x"+cart[item])
 let calc=calculateTotals()
 
 let text=lines.join("\n")
-text+="\n------------------\n"
+text+="\n\n"
 text+="סיכום ביניים: ₪"+calc.subtotal+"\n"
-text+="הנחה: ₪-"+calc.discount+"\n"
 text+="טיפ: ₪"+calc.tip+"\n"
 text+="לתשלום: ₪"+calc.total
+text+="\n------------------\n"
 
 navigator.clipboard.writeText(text)
 alert("ההתפקדות הועתקה")
