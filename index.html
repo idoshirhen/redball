@@ -18,22 +18,139 @@ url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
 background-size:cover;
 background-position:center;
 }
-h1{margin-top:30px;font-size:38px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
-.section{margin:40px auto;max-width:1000px;}
-.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;}
-.card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}
-.card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
+
+h1{
+margin-top:30px;
+font-size:38px;
+color:#6ed8ff;
+text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
+}
+
+.sections-wrapper{
+max-width:1100px;
+margin:auto;
+padding:10px;
+}
+
+.top-sections{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+@media(max-width:700px){
+.top-sections{
+grid-template-columns:1fr;
+}
+}
+
+.section{
+margin:20px 0;
+}
+
+.grid{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:16px;
+padding:10px;
+}
+
+/* 🔥 חדש — שתיה קלה בשורה אחת */
+.drinks-row .grid{
+flex-wrap:nowrap;
+justify-content:center;
+}
+
+.card{
+width:180px;
+background:#161616;
+border:1px solid #333;
+border-radius:12px;
+padding:14px;
+transition:0.2s;
+}
+
+.card.active{
+box-shadow:0 0 12px white,0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
 .title{font-size:15px;}
 .price{font-size:12px;color:#ff6bf2;}
-.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
-.btn{background:#222;border:1px solid #555;color:white;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;}
-.qty{font-size:18px;color:#6ed8ff;width:30px;}
-.total{font-size:30px;margin-top:20px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
-button.main{background:#ff4de1;border:none;padding:10px 18px;margin:6px;border-radius:8px;cursor:pointer;color:white;min-width:90px;}
-.tip-active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
-#orderPanel{position:fixed;right:10px;top:120px;width:240px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;}
-.orderItem{border-bottom:1px solid #333;padding:4px 0;}
-.footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;}
+
+.controls{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-top:10px;
+}
+
+.btn{
+background:#222;
+border:1px solid #555;
+color:white;
+width:32px;
+height:32px;
+border-radius:6px;
+cursor:pointer;
+font-size:18px;
+}
+
+.qty{
+font-size:18px;
+color:#6ed8ff;
+width:30px;
+}
+
+.total{
+font-size:30px;
+margin-top:20px;
+color:#6ed8ff;
+text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
+}
+
+button.main{
+background:#ff4de1;
+border:none;
+padding:10px 18px;
+margin:6px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+min-width:90px;
+}
+
+.tip-active{
+box-shadow:0 0 12px white,0 0 20px #6ed8ff;
+border:1px solid #6ed8ff;
+}
+
+#orderPanel{
+position:fixed;
+right:10px;
+top:120px;
+width:240px;
+background:#111;
+border:1px solid #444;
+border-radius:10px;
+padding:10px;
+text-align:right;
+direction:rtl;
+}
+
+.orderItem{
+border-bottom:1px solid #333;
+padding:4px 0;
+}
+
+.footer{
+margin-top:60px;
+font-size:12px;
+opacity:0.7;
+direction:rtl;
+}
 </style>
 </head>
 
@@ -120,7 +237,6 @@ const menuData={
 {name:"ייגרמייסטר",price:1600}
 ],
 
-
 }
 
 let cart={}
@@ -161,14 +277,34 @@ total:Math.round(total)
 
 const container=document.getElementById("menu")
 
+const wrapper=document.createElement("div")
+wrapper.className="sections-wrapper"
+
+const topSections=document.createElement("div")
+topSections.className="top-sections"
+
+const middleSections=document.createElement("div")
+middleSections.className="top-sections"
+
+const bottomSections=document.createElement("div")
+
 for(let category in menuData){
+
 let section=document.createElement("div")
+
+if(category==="שתיה קלה"){
+section.className="section drinks-row"
+}else{
 section.className="section"
+}
+
 section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`
+
 let grid=section.querySelector(".grid")
 
 menuData[category].forEach(item=>{
 cart[item.name]=0
+
 let card=document.createElement("div")
 card.className="card"
 card.id="card_"+item.name
@@ -185,8 +321,22 @@ card.innerHTML=`
 grid.appendChild(card)
 })
 
-container.appendChild(section)
+if(category==="משחקים" || category==="מבצעים"){
+topSections.appendChild(section)
+
+}else if(category==="שתיה קלה" || category==="אוכל"){
+middleSections.appendChild(section)
+
+}else{
+bottomSections.appendChild(section)
 }
+
+}
+
+wrapper.appendChild(topSections)
+wrapper.appendChild(middleSections)
+wrapper.appendChild(bottomSections)
+container.appendChild(wrapper)
 
 function setTipPercent(p,btn){
 tipPercent=p
