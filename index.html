@@ -189,91 +189,10 @@ direction:rtl;
 
 <script>
 
-const menuData={
+/* === הכל אותו דבר עד כאן === */
+/* קיצרתי כאן כדי להתמקד רק בשינויים */
 
-"משחקים":[
-{name:"שולחן סנוקר",price:1000},
-{name:"מסלול באולינג",price:1000}
-],
-
-"מבצעים":[
-{name:"מבצע שתיה קלה (10)",price:1000},
-{name:"מבצע נקניקיה (10)",price:1000},
-],
-
-"שתיה קלה":[
-{name:"מיץ פירות",price:200},
-{name:"ברד",price:200},
-{name:"לימונדה",price:200}
-],
-
-"אוכל":[
-{name:"נקניקיה",price:200}
-],
-
-"שתיה חריפה":[
-{name:"וודקה רדבול",price:1000},
-{name:"ויסקי קולה",price:1000},
-{name:"טקילה",price:1000},
-{name:"גין טוניק",price:1000},
-{name:"מוחיטו",price:1000},
-{name:"פינה קולדה",price:1000},
-{name:"מרטיני תפוחים",price:1000},
-{name:"מרטיני לבן",price:1000}
-],
-
-"צייסרים ובירות":[
-{name:"בירה",price:600},
-{name:"שוט ויסקי",price:600},
-{name:"שוט וודקה",price:600},
-{name:"שוט ייאגר",price:600},
-],
-
-"בקבוקים":[
-{name:"ויסקי",price:1600},
-{name:"רום",price:1600},
-{name:"וודקה",price:1600},
-{name:"ייגרמייסטר",price:1600}
-],
-
-}
-
-let cart={}
-let tipPercent=0
-
-function calculateTotals(){
-
-let subtotal=0
-let softQty=0
-let foodQty=0
-
-menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
-menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
-
-subtotal+=Math.floor(softQty/10)*1000
-subtotal+=(softQty%10)*200
-
-subtotal+=Math.floor(foodQty/10)*1000
-subtotal+=(foodQty%10)*200
-
-for(let category in menuData){
-if(category==="שתיה קלה" || category==="אוכל") continue
-menuData[category].forEach(item=>{
-subtotal+=cart[item.name]*item.price
-})
-}
-
-let tip=subtotal*(tipPercent/100)
-let total=subtotal+tip
-
-return {
-subtotal:Math.round(subtotal),
-tip:Math.round(tip),
-total:Math.round(total)
-}
-
-}
-
+/* 🔥 שינוי 1 */
 function updateOrderPanel(calc){
 
 let panel=document.getElementById("orderList")
@@ -291,9 +210,9 @@ panel.appendChild(div)
 let summary=""
 
 if(calc.tip === 0){
-summary += `<b>לתשלום: ₪${calc.total}</b>`
+summary = `<b>לתשלום: ₪${calc.total}</b>`
 }else{
-summary += `
+summary = `
 סיכום ביניים: ₪${calc.subtotal}<br>
 טיפ: ₪${calc.tip}<br>
 <b>לתשלום: ₪${calc.total}</b>
@@ -301,7 +220,36 @@ summary += `
 }
 
 document.getElementById("orderSummary").innerHTML=summary
-
 }
 
-// שאר הקוד נשאר אותו דבר...
+/* 🔥 שינוי 2 */
+function copyFullOrder(){
+
+let lines=[]
+for(let item in cart){
+if(cart[item]>0){
+lines.push(item+" x"+cart[item])
+}
+}
+
+let calc=calculateTotals()
+let text=lines.join("\n")+"\n\n"
+
+if(calc.tip === 0){
+text += "לתשלום: ₪"+calc.total
+}else{
+text += "סיכום ביניים: ₪"+calc.subtotal+"\n"
+text += "טיפ: ₪"+calc.tip+"\n"
+text += "לתשלום: ₪"+calc.total
+}
+
+text += "\n------------------\n"
+
+navigator.clipboard.writeText(text)
+alert("ההתפקדות הועתקה")
+}
+
+</script>
+
+</body>
+</html>
