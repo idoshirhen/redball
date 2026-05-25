@@ -274,7 +274,6 @@ total:Math.round(total)
 
 }
 
-/* 🔥 שינוי 1 */
 function updateOrderPanel(calc){
 
 let panel=document.getElementById("orderList")
@@ -292,19 +291,18 @@ panel.appendChild(div)
 let summary=""
 
 if(calc.tip === 0){
-summary = `<b>לתשלום: ₪${calc.total}</b>`
+summary = `<b>#לתשלום: ₪${calc.total}#</b>`
 }else{
 summary = `
 סיכום ביניים: ₪${calc.subtotal}<br>
 טיפ: ₪${calc.tip}<br>
-<b>לתשלום: ₪${calc.total}</b>
+<b>#לתשלום: ₪${calc.total}#</b>
 `
 }
 
 document.getElementById("orderSummary").innerHTML=summary
 }
 
-/* 🔥 שינוי 2 */
 function copyFullOrder(){
 
 let lines=[]
@@ -318,11 +316,11 @@ let calc=calculateTotals()
 let text=lines.join("\n")+"\n\n"
 
 if(calc.tip === 0){
-text += "לתשלום: ₪"+calc.total
+text += "#לתשלום: ₪"+calc.total+"#"
 }else{
 text += "סיכום ביניים: ₪"+calc.subtotal+"\n"
 text += "טיפ: ₪"+calc.tip+"\n"
-text += "לתשלום: ₪"+calc.total
+text += "#לתשלום: ₪"+calc.total+"#"
 }
 
 text += "\n------------------\n"
@@ -330,8 +328,6 @@ text += "\n------------------\n"
 navigator.clipboard.writeText(text)
 alert("ההתפקדות הועתקה")
 }
-
-/* === שאר הקוד שלך ללא שינוי === */
 
 const container=document.getElementById("menu")
 
