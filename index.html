@@ -68,10 +68,6 @@ input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px soli
   <div class="start-card">
     <h2>כניסת עובד</h2>
     <p>בחר שם עובד כדי להיכנס לקופה. הבחירה נשמרת בדפדפן הזה.</p>
-    <div id="quickLoginBox" class="hidden">
-      <button class="main" onclick="quickLogin()">כניסה מהירה בתור <span id="savedEmployeeLabel"></span></button>
-      <div style="font-size:12px;opacity:.75;margin-top:4px;">או בחר עובד אחר</div>
-    </div>
     <select id="employeeSelect">
       <option value="">בחר עובד</option>
       <option value="Messineo">Messineo</option>
@@ -79,12 +75,21 @@ input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px soli
       <option value="lironX3">lironX3</option>
       <option value="Chupapi The Space Cat Monanyo">Chupapi The Space Cat Monanyo</option>
     </select>
-    <input id="employeeCustom" placeholder="או שם עובד חדש">
     <button class="main" onclick="saveEmployeeAndEnter()">כניסה לקופה</button>
     <br>
     <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
   </div>
 </div>
+
+<div id="adminLoginModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>כניסת מנהל</h2>
+    <input id="adminPasswordInput" type="password" placeholder="סיסמת מנהל">
+    <button class="main" onclick="adminLogin()">כניסה</button>
+    <button class="secondary" onclick="closeAdminLogin()">ביטול</button>
+  </div>
+</div>
+
 
 <div id="mainApp" class="hidden">
   <h1>🎳🎱 Red Ball 🎱🎳</h1>
@@ -95,15 +100,6 @@ input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px soli
     <button class="secondary" onclick="showCashier()">קופה</button>
     <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
   </div>
-
-<div id="adminLoginModal" class="modal-bg hidden">
-  <div class="modal">
-    <h2>כניסת מנהל</h2>
-    <input id="adminPasswordInput" type="password" placeholder="סיסמת מנהל">
-    <button class="main" onclick="adminLogin()">כניסה</button>
-    <button class="secondary" onclick="closeAdminLogin()">ביטול</button>
-  </div>
-</div>
 
 <div id="cashierPage">
   <div id="orderPanel">
@@ -127,7 +123,7 @@ input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px soli
 
   <div>
     <button class="main" onclick="copyOrder()">העתק לקבלה</button>
-    <button class="main" onclick="copyFullOrder()">העתק להתפקדות + שמור מכירה</button>
+    <button class="main" onclick="finishOrder()">סיים הזמנה</button>
     <button class="main" onclick="resetAll()">איפוס</button>
   </div>
 </div>
@@ -173,7 +169,13 @@ const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
 const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
 const ADMIN_PASS = "1234"; // תשנה לסיסמה שלך
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let sb = null;
+function isSupabaseConfigured(){
+  return !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_") && window.supabase;
+}
+if(isSupabaseConfigured()){
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 let currentEmployee = localStorage.getItem("redball_employee") || "";
 let adminFilterMode = "week";
 let allOrders = [];
@@ -192,9 +194,9 @@ let cart={};
 let tipPercent=0;
 
 function initEmployee(){
+  // אם כבר נבחר עובד בעבר בדפדפן הזה — נכנסים ישר לקופה
   if(currentEmployee){
-    document.getElementById("savedEmployeeLabel").innerText = currentEmployee;
-    document.getElementById("quickLoginBox").classList.remove("hidden");
+    enterCashier(currentEmployee);
   }
 }
 function enterCashier(name){
@@ -205,22 +207,19 @@ function enterCashier(name){
   document.getElementById("mainApp").classList.remove("hidden");
   showCashier();
 }
-function quickLogin(){
-  if(!currentEmployee){return;}
-  enterCashier(currentEmployee);
-}
 function saveEmployeeAndEnter(){
-  const selected = document.getElementById("employeeSelect").value.trim();
-  const custom = document.getElementById("employeeCustom").value.trim();
-  const name = custom || selected;
-  if(!name){alert("בחר או כתוב שם עובד");return;}
+  const name = document.getElementById("employeeSelect").value.trim();
+  if(!name){alert("בחר עובד");return;}
   enterCashier(name);
 }
 function backToEmployeePage(){
+  localStorage.removeItem("redball_employee");
+  currentEmployee = "";
+  document.getElementById("employeeSelect").value = "";
   document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("adminPage").classList.add("hidden");
+  document.getElementById("cashierPage").classList.remove("hidden");
   document.getElementById("employeePage").classList.remove("hidden");
-  document.getElementById("savedEmployeeLabel").innerText = currentEmployee || "";
-  if(currentEmployee){document.getElementById("quickLoginBox").classList.remove("hidden");}
 }
 
 function calculateTotals(){
@@ -264,8 +263,8 @@ function updateOrderPanel(calc){
 }
 
 async function saveSaleToSupabase(calc, lines){
-  if(SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_")){
-    throw new Error("לא הוגדרו פרטי Supabase בקוד");
+  if(!sb){
+    throw new Error("לא הוגדרו פרטי Supabase בקוד, לכן המכירה לא נשמרה. ההעתקה לקבלה עדיין עובדת.");
   }
   const payload = {
     employee_name: currentEmployee,
@@ -280,7 +279,7 @@ async function saveSaleToSupabase(calc, lines){
   if(error) throw error;
 }
 
-async function copyFullOrder(){
+async function finishOrder(){
   if(!currentEmployee){backToEmployeePage();return;}
   let lines=getCartLines();
   if(lines.length===0){alert("אין פריטים בהזמנה");return;}
@@ -298,11 +297,16 @@ async function copyFullOrder(){
   try{
     await saveSaleToSupabase(calc, lines);
     await navigator.clipboard.writeText(text);
-    alert("ההתפקדות הועתקה והמכירה נשמרה");
+    alert("ההזמנה נשמרה והועתקה בהצלחה");
     resetAll();
   }catch(err){
     console.error(err);
-    alert("ההעתקה/שמירה נכשלה: "+err.message);
+    try{
+      await navigator.clipboard.writeText(text);
+      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה: "+err.message);
+    }catch(copyErr){
+      alert("ההעתקה/שמירה נכשלה: "+err.message);
+    }
   }
 }
 
@@ -335,7 +339,16 @@ function setTipPercent(p,btn){tipPercent=p;document.querySelectorAll(".tip-btn")
 function changeQty(name,amount){cart[name]+=amount;if(cart[name]<0)cart[name]=0;document.getElementById(name).innerText=cart[name];let card=document.getElementById("card_"+name);if(cart[name]>0){card.classList.add("active")}else{card.classList.remove("active")}updateTotal();}
 function updateTotal(){let calc=calculateTotals();document.getElementById("total").innerText="סה\"כ: "+calc.total;updateOrderPanel(calc);}
 function resetAll(){for(let item in cart){cart[item]=0;document.getElementById(item).innerText=0;let card=document.getElementById("card_"+item);if(card)card.classList.remove("active");}tipPercent=0;document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));updateTotal();}
-function copyOrder(){let items=getCartLines();navigator.clipboard.writeText(items.join(", "));alert("הקבלה הועתקה");}
+async function copyOrder(){
+  let items=getCartLines();
+  if(items.length===0){alert("אין פריטים בהזמנה");return;}
+  try{
+    await navigator.clipboard.writeText(items.join(", "));
+    alert("הקבלה הועתקה");
+  }catch(e){
+    alert("העתקה נכשלה. תפתח את האתר דרך HTTPS או GitHub Pages ולא כקובץ מקומי.");
+  }
+}
 
 function openAdminLogin(){document.getElementById("adminLoginModal").classList.remove("hidden");}
 function closeAdminLogin(){document.getElementById("adminLoginModal").classList.add("hidden");}
@@ -352,6 +365,7 @@ function filterAll(){adminFilterMode="all";renderAdmin();}
 
 async function loadAdminData(){
   try{
+    if(!sb){ alert("עדיין לא הוגדר Supabase בקוד, לכן אין נתונים לפאנל מנהלים."); return; }
     const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending:false });
     if(error) throw error;
     allOrders = data || [];
