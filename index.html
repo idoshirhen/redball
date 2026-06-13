@@ -87,6 +87,7 @@ text-shadow:0 0 8px #6ed8ff;
 max-width:1100px;
 margin:auto;
 padding:10px;
+direction:ltr;
 }
 .top-sections{
 display:grid;
@@ -103,14 +104,14 @@ gap:20px;
 .drinks-row .grid{flex-wrap:wrap!important}
 h1{font-size:30px}
 }
-.section{margin:20px 0;}
-.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;}
+.section{margin:20px 0;direction:rtl;}
+.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;direction:ltr;}
 .drinks-row .grid{flex-wrap:nowrap;justify-content:center;}
 .card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}
 .card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
 .title{font-size:15px;}
 .price{font-size:12px;color:#ff6bf2;}
-.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
+.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;direction:ltr;}
 .btn{background:#222;border:1px solid #555;color:white;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;}
 .qty{font-size:18px;color:#6ed8ff;width:30px;}
 .total{font-size:30px;margin-top:20px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
@@ -128,8 +129,27 @@ font-weight:bold;
 button.secondary{background:#222;border:1px solid #555;color:white;padding:9px 14px;border-radius:8px;cursor:pointer;}
 button.danger{background:#b00020;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
 button.success{background:#0f8f5f;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+.loginEnterBtn{font-size:18px;padding:14px 34px!important;min-width:150px!important;}
 button.main:hover,button.secondary:hover,.btn:hover{filter:brightness(1.15)}
 .tip-active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
+.posActionButtons{
+  direction:ltr;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:0;
+}
+.posActionButtons button{direction:rtl;}
+.tipButtons{
+  direction:ltr;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.tipButtons button{direction:rtl;}
+
 #orderPanel{position:fixed;left:10px;top:82px;width:250px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;z-index:4;}
 .orderItem{border-bottom:1px solid #333;padding:4px 0;}
 .footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;padding-bottom:40px;}
@@ -171,7 +191,7 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
     <select id="employeeSelect" class="workerSelect">
       <option value="">בחר עובד...</option>
     </select>
-    <button class="main" onclick="loginEmployee()">כניסה לקופה</button>
+    <button class="main loginEnterBtn" onclick="loginEmployee()">כניסה</button>
     <br>
     <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
   </div>
@@ -200,15 +220,17 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
 
   <div>
     <h3>טיפ</h3>
-    <button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
-    <button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
-    <button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
-    <button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+    <div class="tipButtons">
+      <button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
+      <button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
+      <button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
+      <button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+    </div>
   </div>
 
   <div class="total" id="total">סה"כ: 0</div>
 
-  <div>
+  <div class="posActionButtons">
     <button class="main" onclick="copyOrder()">העתק לקבלה</button>
     <button class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>
     <button class="main" onclick="resetAll()">איפוס</button>
