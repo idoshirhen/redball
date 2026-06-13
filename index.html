@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Red Ball🎱GameZone</title>
-
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
-  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body{
 font-family:Arial;
@@ -17,432 +17,399 @@ linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95)),
 url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
 background-size:cover;
 background-position:center;
+min-height:100vh;
 }
 
-h1{
-margin-top:30px;
-font-size:38px;
-color:#6ed8ff;
-text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
-}
-
-.sections-wrapper{
-max-width:1100px;
-margin:auto;
-padding:10px;
-}
-
-.top-sections{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-
-@media(max-width:700px){
-.top-sections{
-grid-template-columns:1fr;
-}
-}
-
-.section{
-margin:20px 0;
-}
-
-.grid{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:16px;
-padding:10px;
-}
-
-.drinks-row .grid{
-flex-wrap:nowrap;
-justify-content:center;
-}
-
-.card{
-width:180px;
-background:#161616;
-border:1px solid #333;
-border-radius:12px;
-padding:14px;
-transition:0.2s;
-}
-
-.card.active{
-box-shadow:0 0 12px white,0 0 20px #6ed8ff;
-border:1px solid #6ed8ff;
-}
-
-.title{font-size:15px;}
-.price{font-size:12px;color:#ff6bf2;}
-
-.controls{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:10px;
-margin-top:10px;
-}
-
-.btn{
-background:#222;
-border:1px solid #555;
-color:white;
-width:32px;
-height:32px;
-border-radius:6px;
-cursor:pointer;
-font-size:18px;
-}
-
-.qty{
-font-size:18px;
-color:#6ed8ff;
-width:30px;
-}
-
-.total{
-font-size:30px;
-margin-top:20px;
-color:#6ed8ff;
-text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
-}
-
-button.main{
-background:#ff4de1;
-border:none;
-padding:10px 18px;
-margin:6px;
-border-radius:8px;
-cursor:pointer;
-color:white;
-min-width:90px;
-}
-
-.tip-active{
-box-shadow:0 0 12px white,0 0 20px #6ed8ff;
-border:1px solid #6ed8ff;
-}
-
-#orderPanel{
-position:fixed;
-right:10px;
-top:120px;
-width:240px;
-background:#111;
-border:1px solid #444;
-border-radius:10px;
-padding:10px;
-text-align:right;
-direction:rtl;
-}
-
-.orderItem{
-border-bottom:1px solid #333;
-padding:4px 0;
-}
-
-.footer{
-margin-top:60px;
-font-size:12px;
-opacity:0.7;
-direction:rtl;
-}
+h1{margin-top:30px;font-size:38px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
+h2{color:#fff;}
+.sections-wrapper{max-width:1100px;margin:auto;padding:10px;}
+.top-sections{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:900px){.top-sections{grid-template-columns:1fr;} #orderPanel{position:static;width:auto;margin:15px;} .admin-table{font-size:12px;}}
+.section{margin:20px 0;}
+.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;}
+.drinks-row .grid{flex-wrap:nowrap;justify-content:center;}
+@media(max-width:700px){.drinks-row .grid{flex-wrap:wrap;}}
+.card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}
+.card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
+.title{font-size:15px;}.price{font-size:12px;color:#ff6bf2;}
+.controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
+.btn{background:#222;border:1px solid #555;color:white;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;}
+.qty{font-size:18px;color:#6ed8ff;width:30px;}
+.total{font-size:30px;margin-top:20px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
+button.main{background:#ff4de1;border:none;padding:10px 18px;margin:6px;border-radius:8px;cursor:pointer;color:white;min-width:90px;}
+button.secondary{background:#222;border:1px solid #6ed8ff;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;margin:5px;}
+.tip-active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
+#orderPanel{position:fixed;right:10px;top:120px;width:260px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;z-index:5;}
+.orderItem{border-bottom:1px solid #333;padding:4px 0;}
+.footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;}
+.topbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;direction:rtl;margin-top:10px;}
+.badge{background:#111;border:1px solid #444;border-radius:999px;padding:8px 14px;color:#6ed8ff;}
+.hidden{display:none!important;}
+.start-page{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;}
+.start-card{background:#111;border:1px solid #6ed8ff;border-radius:16px;padding:28px;max-width:430px;width:92%;box-shadow:0 0 22px rgba(110,216,255,.55);direction:rtl;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;justify-content:center;align-items:center;z-index:20;}
+.modal{background:#111;border:1px solid #6ed8ff;border-radius:14px;padding:25px;max-width:420px;width:90%;box-shadow:0 0 20px #6ed8ff;text-align:center;direction:rtl;}
+input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px solid #555;background:#191919;color:#fff;text-align:center;}
+.admin-panel{max-width:1100px;margin:25px auto;background:rgba(10,10,10,0.92);border:1px solid #444;border-radius:14px;padding:18px;direction:rtl;}
+.admin-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0;}
+@media(max-width:900px){.admin-cards{grid-template-columns:1fr 1fr;}}
+.stat{background:#161616;border:1px solid #333;border-radius:12px;padding:15px;}
+.stat b{display:block;color:#6ed8ff;font-size:24px;margin-top:6px;}
+.admin-table{width:100%;border-collapse:collapse;margin-top:15px;direction:rtl;}
+.admin-table th,.admin-table td{border-bottom:1px solid #333;padding:8px;text-align:right;vertical-align:top;}
+.admin-table th{color:#ff6bf2;}
+.notice{background:#231329;border:1px solid #ff4de1;border-radius:10px;padding:10px;margin:12px auto;max-width:900px;direction:rtl;}
 </style>
 </head>
 
 <body>
-
-<h1>🎳🎱 Red Ball 🎱🎳</h1>
-
-<div id="orderPanel">
-<h3>הזמנה</h3>
-<div id="orderList"></div>
-<hr style="border:1px solid #333;margin:10px 0;">
-<div id="orderSummary"></div>
+<div id="employeePage" class="start-page">
+  <h1>🎳🎱 Red Ball 🎱🎳</h1>
+  <div class="start-card">
+    <h2>כניסת עובד</h2>
+    <p>בחר שם עובד כדי להיכנס לקופה. הבחירה נשמרת בדפדפן הזה.</p>
+    <div id="quickLoginBox" class="hidden">
+      <button class="main" onclick="quickLogin()">כניסה מהירה בתור <span id="savedEmployeeLabel"></span></button>
+      <div style="font-size:12px;opacity:.75;margin-top:4px;">או בחר עובד אחר</div>
+    </div>
+    <select id="employeeSelect">
+      <option value="">בחר עובד</option>
+      <option value="Messineo">Messineo</option>
+      <option value="Yakir [GZIL]">Yakir [GZIL]</option>
+      <option value="lironX3">lironX3</option>
+      <option value="Chupapi The Space Cat Monanyo">Chupapi The Space Cat Monanyo</option>
+    </select>
+    <input id="employeeCustom" placeholder="או שם עובד חדש">
+    <button class="main" onclick="saveEmployeeAndEnter()">כניסה לקופה</button>
+    <br>
+    <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
+  </div>
 </div>
 
-<div id="menu"></div>
+<div id="mainApp" class="hidden">
+  <h1>🎳🎱 Red Ball 🎱🎳</h1>
 
-<div>
-<h3>טיפ</h3>
-<button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
-<button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
-<button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
-<button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+  <div class="topbar">
+    <div class="badge">עובד מחובר: <span id="employeeNameLabel">לא נבחר</span></div>
+    <button class="secondary" onclick="backToEmployeePage()">החלף עובד</button>
+    <button class="secondary" onclick="showCashier()">קופה</button>
+    <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
+  </div>
+
+<div id="adminLoginModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>כניסת מנהל</h2>
+    <input id="adminPasswordInput" type="password" placeholder="סיסמת מנהל">
+    <button class="main" onclick="adminLogin()">כניסה</button>
+    <button class="secondary" onclick="closeAdminLogin()">ביטול</button>
+  </div>
 </div>
 
-<div class="total" id="total">סה"כ: 0</div>
+<div id="cashierPage">
+  <div id="orderPanel">
+    <h3>הזמנה</h3>
+    <div id="orderList"></div>
+    <hr style="border:1px solid #333;margin:10px 0;">
+    <div id="orderSummary"></div>
+  </div>
 
-<div>
-<button class="main" onclick="copyOrder()">העתק לקבלה</button>
-<button class="main" onclick="copyFullOrder()">העתק להתפקדות</button>
-<button class="main" onclick="resetAll()">איפוס</button>
+  <div id="menu"></div>
+
+  <div>
+    <h3>טיפ</h3>
+    <button class="main tip-btn" onclick="setTipPercent(0,this)">0%</button>
+    <button class="main tip-btn" onclick="setTipPercent(5,this)">5%</button>
+    <button class="main tip-btn" onclick="setTipPercent(10,this)">10%</button>
+    <button class="main tip-btn" onclick="setTipPercent(20,this)">20%</button>
+  </div>
+
+  <div class="total" id="total">סה"כ: 0</div>
+
+  <div>
+    <button class="main" onclick="copyOrder()">העתק לקבלה</button>
+    <button class="main" onclick="copyFullOrder()">העתק להתפקדות + שמור מכירה</button>
+    <button class="main" onclick="resetAll()">איפוס</button>
+  </div>
 </div>
 
-<div class="footer">
-כל הזכויות שמורות ל-Messineo על בניית האפליקציה
-<br><br><br><br>
+<div id="adminPage" class="admin-panel hidden">
+  <h2>פאנל מנהלים</h2>
+  <div class="notice">הערה חשובה: זו גרסה פשוטה שמתאימה ל־RP. בשביל אבטחה אמיתית צריך Supabase Auth / שרת צד אחורי.</div>
+  <div>
+    <button class="secondary" onclick="loadAdminData()">רענן נתונים</button>
+    <button class="secondary" onclick="filterThisWeek()">השבוע</button>
+    <button class="secondary" onclick="filterAll()">הכל</button>
+  </div>
+
+  <div class="admin-cards">
+    <div class="stat">סה"כ מכירות<b id="statSales">₪0</b></div>
+    <div class="stat">סה"כ טיפ<b id="statTips">₪0</b></div>
+    <div class="stat">שכר עובדים 25%<b id="statCommission">₪0</b></div>
+    <div class="stat">מספר הזמנות<b id="statOrders">0</b></div>
+  </div>
+
+  <h3>סיכום לפי עובד</h3>
+  <table class="admin-table">
+    <thead><tr><th>עובד</th><th>מכירות</th><th>טיפים</th><th>שכר 25%</th><th>כמות הזמנות</th></tr></thead>
+    <tbody id="employeeSummaryBody"></tbody>
+  </table>
+
+  <h3>כל ההזמנות</h3>
+  <table class="admin-table">
+    <thead><tr><th>תאריך</th><th>עובד</th><th>פריטים</th><th>סכום</th><th>טיפ</th><th>סה"כ</th><th>25%</th></tr></thead>
+    <tbody id="ordersBody"></tbody>
+  </table>
 </div>
+
+</div>
+
+<div class="footer">כל הזכויות שמורות ל-Messineo על בניית האפליקציה<br><br><br><br></div>
 
 <script>
+/* =======================
+   הגדרות Supabase
+   ======================= */
+const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+const ADMIN_PASS = "1234"; // תשנה לסיסמה שלך
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentEmployee = localStorage.getItem("redball_employee") || "";
+let adminFilterMode = "week";
+let allOrders = [];
 
 const menuData={
+"משחקים":[{name:"שולחן סנוקר",price:1000},{name:"מסלול באולינג",price:1000}],
+"מבצעים":[{name:"מבצע שתיה קלה (10)",price:1000},{name:"מבצע נקניקיה (10)",price:1000}],
+"שתיה קלה":[{name:"מיץ פירות",price:200},{name:"ברד",price:200},{name:"לימונדה",price:200}],
+"אוכל":[{name:"נקניקיה",price:200}],
+"שתיה חריפה":[{name:"וודקה רדבול",price:1000},{name:"ויסקי קולה",price:1000},{name:"טקילה",price:1000},{name:"גין טוניק",price:1000},{name:"מוחיטו",price:1000},{name:"פינה קולדה",price:1000},{name:"מרטיני תפוחים",price:1000},{name:"מרטיני לבן",price:1000}],
+"צייסרים ובירות":[{name:"בירה",price:600},{name:"שוט ויסקי",price:600},{name:"שוט וודקה",price:600},{name:"שוט ייאגר",price:600}],
+"בקבוקים":[{name:"ויסקי",price:1600},{name:"רום",price:1600},{name:"וודקה",price:1600},{name:"ייגרמייסטר",price:1600}]
+};
 
-"משחקים":[
-{name:"שולחן סנוקר",price:1000},
-{name:"מסלול באולינג",price:1000}
-],
+let cart={};
+let tipPercent=0;
 
-"מבצעים":[
-{name:"מבצע שתיה קלה (10)",price:1000},
-{name:"מבצע נקניקיה (10)",price:1000},
-],
-
-"שתיה קלה":[
-{name:"מיץ פירות",price:200},
-{name:"ברד",price:200},
-{name:"לימונדה",price:200}
-],
-
-"אוכל":[
-{name:"נקניקיה",price:200}
-],
-
-"שתיה חריפה":[
-{name:"וודקה רדבול",price:1000},
-{name:"ויסקי קולה",price:1000},
-{name:"טקילה",price:1000},
-{name:"גין טוניק",price:1000},
-{name:"מוחיטו",price:1000},
-{name:"פינה קולדה",price:1000},
-{name:"מרטיני תפוחים",price:1000},
-{name:"מרטיני לבן",price:1000}
-],
-
-"צייסרים ובירות":[
-{name:"בירה",price:600},
-{name:"שוט ויסקי",price:600},
-{name:"שוט וודקה",price:600},
-{name:"שוט ייאגר",price:600},
-],
-
-"בקבוקים":[
-{name:"ויסקי",price:1600},
-{name:"רום",price:1600},
-{name:"וודקה",price:1600},
-{name:"ייגרמייסטר",price:1600}
-],
-
+function initEmployee(){
+  if(currentEmployee){
+    document.getElementById("savedEmployeeLabel").innerText = currentEmployee;
+    document.getElementById("quickLoginBox").classList.remove("hidden");
+  }
 }
-
-let cart={}
-let tipPercent=0
+function enterCashier(name){
+  currentEmployee = name;
+  localStorage.setItem("redball_employee", name);
+  document.getElementById("employeeNameLabel").innerText = name;
+  document.getElementById("employeePage").classList.add("hidden");
+  document.getElementById("mainApp").classList.remove("hidden");
+  showCashier();
+}
+function quickLogin(){
+  if(!currentEmployee){return;}
+  enterCashier(currentEmployee);
+}
+function saveEmployeeAndEnter(){
+  const selected = document.getElementById("employeeSelect").value.trim();
+  const custom = document.getElementById("employeeCustom").value.trim();
+  const name = custom || selected;
+  if(!name){alert("בחר או כתוב שם עובד");return;}
+  enterCashier(name);
+}
+function backToEmployeePage(){
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("employeePage").classList.remove("hidden");
+  document.getElementById("savedEmployeeLabel").innerText = currentEmployee || "";
+  if(currentEmployee){document.getElementById("quickLoginBox").classList.remove("hidden");}
+}
 
 function calculateTotals(){
-
-let subtotal=0
-let softQty=0
-let foodQty=0
-
-menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name])
-menuData["אוכל"].forEach(i=>foodQty+=cart[i.name])
-
-subtotal+=Math.floor(softQty/10)*1000
-subtotal+=(softQty%10)*200
-
-subtotal+=Math.floor(foodQty/10)*1000
-subtotal+=(foodQty%10)*200
-
-for(let category in menuData){
-if(category==="שתיה קלה" || category==="אוכל") continue
-menuData[category].forEach(item=>{
-subtotal+=cart[item.name]*item.price
-})
+  let subtotal=0, softQty=0, foodQty=0;
+  menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name]);
+  menuData["אוכל"].forEach(i=>foodQty+=cart[i.name]);
+  subtotal+=Math.floor(softQty/10)*1000;
+  subtotal+=(softQty%10)*200;
+  subtotal+=Math.floor(foodQty/10)*1000;
+  subtotal+=(foodQty%10)*200;
+  for(let category in menuData){
+    if(category==="שתיה קלה" || category==="אוכל") continue;
+    menuData[category].forEach(item=>{subtotal+=cart[item.name]*item.price;});
+  }
+  let tip=subtotal*(tipPercent/100);
+  let total=subtotal+tip;
+  return {subtotal:Math.round(subtotal),tip:Math.round(tip),total:Math.round(total),commission:Math.round(subtotal*0.25)};
 }
 
-let tip=subtotal*(tipPercent/100)
-let total=subtotal+tip
-
-return {
-subtotal:Math.round(subtotal),
-tip:Math.round(tip),
-total:Math.round(total)
+function getCartLines(){
+  let lines=[];
+  for(let item in cart){if(cart[item]>0){lines.push(item+" x"+cart[item]);}}
+  return lines;
 }
 
-}
-
-/* 🔥 שינוי 1 */
 function updateOrderPanel(calc){
-
-let panel=document.getElementById("orderList")
-panel.innerHTML=""
-
-for(let item in cart){
-if(cart[item]>0){
-let div=document.createElement("div")
-div.className="orderItem"
-div.innerText=item+" x"+cart[item]
-panel.appendChild(div)
-}
-}
-
-let summary=""
-
-if(calc.tip === 0){
-summary = `<b># ‎לתשלום: ₪${calc.total}</b>`
-}else{
-summary = `
-סיכום ביניים: ₪${calc.subtotal}<br>
-טיפ: ₪${calc.tip}<br>
-<b># ‎לתשלום: ₪${calc.total}</b>
-`
+  let panel=document.getElementById("orderList");
+  panel.innerHTML="";
+  for(let item in cart){
+    if(cart[item]>0){
+      let div=document.createElement("div");
+      div.className="orderItem";
+      div.innerText=item+" x"+cart[item];
+      panel.appendChild(div);
+    }
+  }
+  let summary="";
+  if(calc.tip === 0){summary = `<b># ‎לתשלום: ₪${calc.total}</b>`;}
+  else{summary = `סיכום ביניים: ₪${calc.subtotal}<br>טיפ: ₪${calc.tip}<br><b># ‎לתשלום: ₪${calc.total}</b>`;}
+  document.getElementById("orderSummary").innerHTML=summary;
 }
 
-document.getElementById("orderSummary").innerHTML=summary
+async function saveSaleToSupabase(calc, lines){
+  if(SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_")){
+    throw new Error("לא הוגדרו פרטי Supabase בקוד");
+  }
+  const payload = {
+    employee_name: currentEmployee,
+    items_text: lines.join("\n"),
+    items_json: JSON.stringify(cart),
+    subtotal: calc.subtotal,
+    tip: calc.tip,
+    total: calc.total,
+    commission: calc.commission
+  };
+  const { error } = await sb.from("orders").insert(payload);
+  if(error) throw error;
 }
 
-/* 🔥 שינוי 2 */
-function copyFullOrder(){
+async function copyFullOrder(){
+  if(!currentEmployee){backToEmployeePage();return;}
+  let lines=getCartLines();
+  if(lines.length===0){alert("אין פריטים בהזמנה");return;}
+  let calc=calculateTotals();
+  let text=lines.join("\n")+"\n\n";
+  if(calc.tip === 0){text += "# \u200Eלתשלום: ₪"+calc.total;}
+  else{
+    text += "סיכום ביניים: ₪"+calc.subtotal+"\n";
+    text += "טיפ: ₪"+calc.tip+"\n";
+    text += "# \u200Eלתשלום: ₪"+calc.total;
+  }
+  text += "\n------------------\n";
+  text += "עובד: "+currentEmployee;
 
-let lines=[]
-for(let item in cart){
-if(cart[item]>0){
-lines.push(item+" x"+cart[item])
+  try{
+    await saveSaleToSupabase(calc, lines);
+    await navigator.clipboard.writeText(text);
+    alert("ההתפקדות הועתקה והמכירה נשמרה");
+    resetAll();
+  }catch(err){
+    console.error(err);
+    alert("ההעתקה/שמירה נכשלה: "+err.message);
+  }
 }
-}
 
-let calc=calculateTotals()
-let text=lines.join("\n")+"\n\n"
-
-if(calc.tip === 0){
-text += "# \u200Eלתשלום: ₪"+calc.total
-}else{
-text += "סיכום ביניים: ₪"+calc.subtotal+"\n"
-text += "טיפ: ₪"+calc.tip+"\n"
-text += "# \u200Eלתשלום: ₪"+calc.total
-}
-
-text += "\n------------------\n"
-
-navigator.clipboard.writeText(text)
-alert("ההתפקדות הועתקה")
-}
-
-/* === שאר הקוד שלך ללא שינוי === */
-
-const container=document.getElementById("menu")
-
-const wrapper=document.createElement("div")
-wrapper.className="sections-wrapper"
-
-const topSections=document.createElement("div")
-topSections.className="top-sections"
-
-const middleSections=document.createElement("div")
-middleSections.className="top-sections"
-
-const bottomSections=document.createElement("div")
+const container=document.getElementById("menu");
+const wrapper=document.createElement("div"); wrapper.className="sections-wrapper";
+const topSections=document.createElement("div"); topSections.className="top-sections";
+const middleSections=document.createElement("div"); middleSections.className="top-sections";
+const bottomSections=document.createElement("div");
 
 for(let category in menuData){
+  let section=document.createElement("div");
+  section.className = category==="שתיה קלה" ? "section drinks-row" : "section";
+  section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`;
+  let grid=section.querySelector(".grid");
+  menuData[category].forEach(item=>{
+    cart[item.name]=0;
+    let card=document.createElement("div");
+    card.className="card";
+    card.id="card_"+item.name;
+    card.innerHTML=`<div class="title">${item.name}</div><div class="price">₪${item.price}</div><div class="controls"><button class="btn" onclick="changeQty('${item.name}',-1)">-</button><div class="qty" id="${item.name}">0</div><button class="btn" onclick="changeQty('${item.name}',1)">+</button></div>`;
+    grid.appendChild(card);
+  });
+  if(category==="משחקים" || category==="מבצעים") topSections.appendChild(section);
+  else if(category==="שתיה קלה" || category==="אוכל") middleSections.appendChild(section);
+  else bottomSections.appendChild(section);
+}
+wrapper.appendChild(topSections); wrapper.appendChild(middleSections); wrapper.appendChild(bottomSections); container.appendChild(wrapper);
 
-let section=document.createElement("div")
+function setTipPercent(p,btn){tipPercent=p;document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));btn.classList.add("tip-active");updateTotal();}
+function changeQty(name,amount){cart[name]+=amount;if(cart[name]<0)cart[name]=0;document.getElementById(name).innerText=cart[name];let card=document.getElementById("card_"+name);if(cart[name]>0){card.classList.add("active")}else{card.classList.remove("active")}updateTotal();}
+function updateTotal(){let calc=calculateTotals();document.getElementById("total").innerText="סה\"כ: "+calc.total;updateOrderPanel(calc);}
+function resetAll(){for(let item in cart){cart[item]=0;document.getElementById(item).innerText=0;let card=document.getElementById("card_"+item);if(card)card.classList.remove("active");}tipPercent=0;document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));updateTotal();}
+function copyOrder(){let items=getCartLines();navigator.clipboard.writeText(items.join(", "));alert("הקבלה הועתקה");}
 
-if(category==="שתיה קלה"){
-section.className="section drinks-row"
-}else{
-section.className="section"
+function openAdminLogin(){document.getElementById("adminLoginModal").classList.remove("hidden");}
+function closeAdminLogin(){document.getElementById("adminLoginModal").classList.add("hidden");}
+function adminLogin(){
+  const pass=document.getElementById("adminPasswordInput").value;
+  if(pass!==ADMIN_PASS){alert("סיסמה שגויה");return;}
+  closeAdminLogin();
+  showAdmin();
+}
+function showCashier(){document.getElementById("cashierPage").classList.remove("hidden");document.getElementById("adminPage").classList.add("hidden");}
+function showAdmin(){document.getElementById("employeePage").classList.add("hidden");document.getElementById("mainApp").classList.remove("hidden");document.getElementById("cashierPage").classList.add("hidden");document.getElementById("adminPage").classList.remove("hidden");loadAdminData();}
+function filterThisWeek(){adminFilterMode="week";renderAdmin();}
+function filterAll(){adminFilterMode="all";renderAdmin();}
+
+async function loadAdminData(){
+  try{
+    const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending:false });
+    if(error) throw error;
+    allOrders = data || [];
+    renderAdmin();
+  }catch(err){
+    console.error(err);
+    alert("טעינת הנתונים נכשלה: "+err.message);
+  }
+}
+function startOfWeek(d){
+  const date=new Date(d);
+  const day=date.getDay();
+  const diff=date.getDate()-day;
+  const start=new Date(date.setDate(diff));
+  start.setHours(0,0,0,0);
+  return start;
+}
+function getFilteredOrders(){
+  if(adminFilterMode!=="week") return allOrders;
+  const start=startOfWeek(new Date());
+  return allOrders.filter(o=>new Date(o.created_at)>=start);
+}
+function money(n){return "₪"+Number(n||0).toLocaleString("he-IL");}
+function renderAdmin(){
+  const orders=getFilteredOrders();
+  let totalSales=0,totalTips=0,totalCommission=0;
+  let byEmployee={};
+  orders.forEach(o=>{
+    totalSales+=Number(o.subtotal||0);
+    totalTips+=Number(o.tip||0);
+    totalCommission+=Number(o.commission||0);
+    const emp=o.employee_name||"לא ידוע";
+    if(!byEmployee[emp]) byEmployee[emp]={sales:0,tips:0,commission:0,count:0};
+    byEmployee[emp].sales+=Number(o.subtotal||0);
+    byEmployee[emp].tips+=Number(o.tip||0);
+    byEmployee[emp].commission+=Number(o.commission||0);
+    byEmployee[emp].count++;
+  });
+  document.getElementById("statSales").innerText=money(totalSales);
+  document.getElementById("statTips").innerText=money(totalTips);
+  document.getElementById("statCommission").innerText=money(totalCommission);
+  document.getElementById("statOrders").innerText=orders.length;
+
+  const summaryBody=document.getElementById("employeeSummaryBody"); summaryBody.innerHTML="";
+  Object.keys(byEmployee).sort().forEach(emp=>{
+    const s=byEmployee[emp];
+    summaryBody.innerHTML += `<tr><td>${emp}</td><td>${money(s.sales)}</td><td>${money(s.tips)}</td><td>${money(s.commission)}</td><td>${s.count}</td></tr>`;
+  });
+
+  const ordersBody=document.getElementById("ordersBody"); ordersBody.innerHTML="";
+  orders.forEach(o=>{
+    const date=new Date(o.created_at).toLocaleString("he-IL");
+    ordersBody.innerHTML += `<tr><td>${date}</td><td>${o.employee_name||""}</td><td>${(o.items_text||"").replaceAll("\n","<br>")}</td><td>${money(o.subtotal)}</td><td>${money(o.tip)}</td><td>${money(o.total)}</td><td>${money(o.commission)}</td></tr>`;
+  });
 }
 
-section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`
-
-let grid=section.querySelector(".grid")
-
-menuData[category].forEach(item=>{
-cart[item.name]=0
-
-let card=document.createElement("div")
-card.className="card"
-card.id="card_"+item.name
-
-card.innerHTML=`
-<div class="title">${item.name}</div>
-<div class="price">₪${item.price}</div>
-<div class="controls">
-<button class="btn" onclick="changeQty('${item.name}',-1)">-</button>
-<div class="qty" id="${item.name}">0</div>
-<button class="btn" onclick="changeQty('${item.name}',1)">+</button>
-</div>`
-
-grid.appendChild(card)
-})
-
-if(category==="משחקים" || category==="מבצעים"){
-topSections.appendChild(section)
-}else if(category==="שתיה קלה" || category==="אוכל"){
-middleSections.appendChild(section)
-}else{
-bottomSections.appendChild(section)
-}
-
-}
-
-wrapper.appendChild(topSections)
-wrapper.appendChild(middleSections)
-wrapper.appendChild(bottomSections)
-container.appendChild(wrapper)
-
-function setTipPercent(p,btn){
-tipPercent=p
-document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"))
-btn.classList.add("tip-active")
-updateTotal()
-}
-
-function changeQty(name,amount){
-cart[name]+=amount
-if(cart[name]<0)cart[name]=0
-document.getElementById(name).innerText=cart[name]
-
-let card=document.getElementById("card_"+name)
-if(cart[name]>0){card.classList.add("active")}
-else{card.classList.remove("active")}
-
-updateTotal()
-}
-
-function updateTotal(){
-let calc=calculateTotals()
-document.getElementById("total").innerText="סה\"כ: "+calc.total
-updateOrderPanel(calc)
-}
-
-function resetAll(){
-for(let item in cart){
-cart[item]=0
-document.getElementById(item).innerText=0
-let card=document.getElementById("card_"+item)
-if(card)card.classList.remove("active")
-}
-tipPercent=0
-document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"))
-updateTotal()
-}
-
-function copyOrder(){
-let items=[]
-for(let item in cart){
-if(cart[item]>0){
-items.push(item+" x"+cart[item])
-}
-}
-navigator.clipboard.writeText(items.join(", "))
-alert("הקבלה הועתקה")
-}
-
+initEmployee();
+updateTotal();
 </script>
-
 </body>
 </html>
