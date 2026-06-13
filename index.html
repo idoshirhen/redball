@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Red Ball🎱GameZone</title>
+
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+*{box-sizing:border-box}
 body{
-font-family:Arial;
+font-family:Arial, sans-serif;
 margin:0;
 color:white;
 text-align:center;
@@ -17,94 +20,175 @@ linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95)),
 url("https://images.unsplash.com/photo-1511512578047-dfb367046420");
 background-size:cover;
 background-position:center;
+background-attachment:fixed;
 min-height:100vh;
 }
 
-h1{margin-top:30px;font-size:38px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
-h2{color:#fff;}
-.sections-wrapper{max-width:1100px;margin:auto;padding:10px;}
-.top-sections{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-@media(max-width:900px){.top-sections{grid-template-columns:1fr;} #orderPanel{position:static;width:auto;margin:15px;} .admin-table{font-size:12px;}}
+h1{
+margin-top:30px;
+font-size:38px;
+color:#6ed8ff;
+text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;
+}
+h2,h3{color:#fff}
+
+.hidden{display:none!important}
+
+/* LOGIN */
+#loginScreen{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+.loginBox{
+width:min(520px, 95vw);
+background:rgba(10,10,10,0.92);
+border:1px solid #333;
+border-radius:18px;
+padding:24px;
+box-shadow:0 0 30px rgba(110,216,255,.25);
+}
+.loginBox h1{margin:0 0 10px}
+.workerSelect{
+width:100%;
+padding:14px;
+border-radius:10px;
+background:#161616;
+color:white;
+border:1px solid #555;
+font-size:18px;
+margin:15px 0;
+}
+
+/* HEADER */
+.topBar{
+position:sticky;
+top:0;
+z-index:10;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+background:rgba(5,5,5,.92);
+border-bottom:1px solid #333;
+padding:10px 14px;
+direction:rtl;
+}
+.employeeBadge{
+color:#6ed8ff;
+font-weight:bold;
+text-shadow:0 0 8px #6ed8ff;
+}
+.topActions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start}
+
+.sections-wrapper{
+max-width:1100px;
+margin:auto;
+padding:10px;
+}
+.top-sections{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+@media(max-width:900px){
+#orderPanel{position:static!important;width:auto!important;margin:10px!important}
+.sections-wrapper{padding:5px}
+}
+@media(max-width:700px){
+.top-sections{grid-template-columns:1fr;}
+.card{width:155px!important}
+.drinks-row .grid{flex-wrap:wrap!important}
+h1{font-size:30px}
+}
 .section{margin:20px 0;}
 .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:10px;}
 .drinks-row .grid{flex-wrap:nowrap;justify-content:center;}
-@media(max-width:700px){.drinks-row .grid{flex-wrap:wrap;}}
 .card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}
 .card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
-.title{font-size:15px;}.price{font-size:12px;color:#ff6bf2;}
+.title{font-size:15px;}
+.price{font-size:12px;color:#ff6bf2;}
 .controls{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
 .btn{background:#222;border:1px solid #555;color:white;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;}
 .qty{font-size:18px;color:#6ed8ff;width:30px;}
 .total{font-size:30px;margin-top:20px;color:#6ed8ff;text-shadow:0 0 10px #6ed8ff,0 0 20px #ff4de1;}
-button.main{background:#ff4de1;border:none;padding:10px 18px;margin:6px;border-radius:8px;cursor:pointer;color:white;min-width:90px;}
-button.secondary{background:#222;border:1px solid #6ed8ff;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;margin:5px;}
+button.main{
+background:#ff4de1;
+border:none;
+padding:10px 18px;
+margin:6px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+min-width:90px;
+font-weight:bold;
+}
+button.secondary{background:#222;border:1px solid #555;color:white;padding:9px 14px;border-radius:8px;cursor:pointer;}
+button.danger{background:#b00020;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+button.success{background:#0f8f5f;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+button.main:hover,button.secondary:hover,.btn:hover{filter:brightness(1.15)}
 .tip-active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}
-#orderPanel{position:fixed;right:10px;top:120px;width:260px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;z-index:5;}
+#orderPanel{position:fixed;left:10px;top:82px;width:250px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;z-index:4;}
 .orderItem{border-bottom:1px solid #333;padding:4px 0;}
-.footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;}
-.topbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;direction:rtl;margin-top:10px;}
-.badge{background:#111;border:1px solid #444;border-radius:999px;padding:8px 14px;color:#6ed8ff;}
-.hidden{display:none!important;}
-.start-page{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;}
-.start-card{background:#111;border:1px solid #6ed8ff;border-radius:16px;padding:28px;max-width:430px;width:92%;box-shadow:0 0 22px rgba(110,216,255,.55);direction:rtl;}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;justify-content:center;align-items:center;z-index:20;}
-.modal{background:#111;border:1px solid #6ed8ff;border-radius:14px;padding:25px;max-width:420px;width:90%;box-shadow:0 0 20px #6ed8ff;text-align:center;direction:rtl;}
-input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px solid #555;background:#191919;color:#fff;text-align:center;}
-.admin-panel{max-width:1100px;margin:25px auto;background:rgba(10,10,10,0.92);border:1px solid #444;border-radius:14px;padding:18px;direction:rtl;}
-.admin-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0;}
-@media(max-width:900px){.admin-cards{grid-template-columns:1fr 1fr;}}
-.stat{background:#161616;border:1px solid #333;border-radius:12px;padding:15px;}
-.stat b{display:block;color:#6ed8ff;font-size:24px;margin-top:6px;}
-.admin-table{width:100%;border-collapse:collapse;margin-top:15px;direction:rtl;}
-.admin-table th,.admin-table td{border-bottom:1px solid #333;padding:8px;text-align:right;vertical-align:top;}
-.admin-table th{color:#ff6bf2;}
-.notice{background:#231329;border:1px solid #ff4de1;border-radius:10px;padding:10px;margin:12px auto;max-width:900px;direction:rtl;}
+.footer{margin-top:60px;font-size:12px;opacity:0.7;direction:rtl;padding-bottom:40px;}
+
+/* ADMIN */
+#adminScreen{min-height:100vh;background:rgba(0,0,0,.88);padding:18px;text-align:right;}
+.adminWrap{max-width:1200px;margin:auto;}
+.adminHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #333;padding-bottom:12px;margin-bottom:15px;}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#101010;border:1px solid #333;border-radius:12px;padding:12px;margin:15px 0;}
+.filters input,.filters select,.modal input,.modal select,.modal textarea{
+background:#161616;color:white;border:1px solid #555;border-radius:8px;padding:10px;
+}
+.statsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0;}
+.statCard{background:#111;border:1px solid #333;border-radius:12px;padding:14px;text-align:center;}
+.statCard .num{font-size:26px;color:#6ed8ff;font-weight:bold;margin-top:6px;}
+.tableBox{overflow:auto;background:#0e0e0e;border:1px solid #333;border-radius:12px;margin-top:15px;}
+table{width:100%;border-collapse:collapse;min-width:850px;direction:rtl;}
+th,td{border-bottom:1px solid #292929;padding:10px;text-align:right;vertical-align:top;}
+th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
+.itemsText{white-space:pre-line;font-size:13px;line-height:1.5;}
+.adminLoginBox{max-width:420px;margin:80px auto;background:#111;border:1px solid #333;border-radius:14px;padding:20px;text-align:center;}
+.adminLoginBox input{width:100%;background:#161616;color:white;border:1px solid #555;border-radius:8px;padding:12px;margin:10px 0;text-align:center;}
+
+.modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:99;padding:15px;}
+.modal{width:min(560px,95vw);background:#111;border:1px solid #444;border-radius:14px;padding:18px;text-align:right;}
+.modal textarea{width:100%;min-height:120px;direction:rtl;}
+.modalRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;}
+@media(max-width:800px){.statsGrid{grid-template-columns:1fr 1fr}.modalRow{grid-template-columns:1fr}.topBar{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
-
 <body>
-<div id="employeePage" class="start-page">
-  <h1>🎳🎱 Red Ball 🎱🎳</h1>
-  <div class="start-card">
-    <h2>כניסת עובד</h2>
-    <p>בחר שם עובד כדי להיכנס לקופה. הבחירה נשמרת בדפדפן הזה.</p>
-    <select id="employeeSelect">
-      <option value="">בחר עובד</option>
-      <option value="Sani">Sani</option>
-      <option value="Peter">Peter</option>
-      <option value="Noa">Noa</option>
-      <option value="Julia">Julia</option>
-      <option value="Eden">Eden</option>
-      <option value="Talya">Talya</option>
-      <option value="Fantoki">Fantoki</option>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <h1>🎳🎱 Red Ball 🎱🎳</h1>
+    <h2>בחירת עובד</h2>
+    <p style="opacity:.8">בחר עובד כדי להיכנס לקופה</p>
+    <select id="employeeSelect" class="workerSelect">
+      <option value="">בחר עובד...</option>
     </select>
-    <button class="main" onclick="saveEmployeeAndEnter()">כניסה לקופה</button>
+    <button class="main" onclick="loginEmployee()">כניסה לקופה</button>
     <br>
     <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
   </div>
 </div>
 
-<div id="adminLoginModal" class="modal-bg hidden">
-  <div class="modal">
-    <h2>כניסת מנהל</h2>
-    <input id="adminPasswordInput" type="password" placeholder="סיסמת מנהל">
-    <button class="main" onclick="adminLogin()">כניסה</button>
-    <button class="secondary" onclick="closeAdminLogin()">ביטול</button>
+<!-- POS SCREEN -->
+<div id="posScreen" class="hidden">
+  <div class="topBar">
+    <div class="employeeBadge" id="employeeBadge">👤 עובד: -</div>
+    <div class="topActions">
+      <button class="secondary" onclick="switchEmployee()">🔄 החלף עובד</button>
+      <button class="secondary" onclick="openAdminLogin()">📊 פאנל מנהלים</button>
+    </div>
   </div>
-</div>
 
-
-<div id="mainApp" class="hidden">
   <h1>🎳🎱 Red Ball 🎱🎳</h1>
 
-  <div class="topbar">
-    <div class="badge">עובד מחובר: <span id="employeeNameLabel">לא נבחר</span></div>
-    <button class="secondary" onclick="backToEmployeePage()">החלף עובד</button>
-    <button class="secondary" onclick="showCashier()">קופה</button>
-    <button class="secondary" onclick="openAdminLogin()">פאנל מנהלים</button>
-  </div>
-
-<div id="cashierPage">
   <div id="orderPanel">
     <h3>הזמנה</h3>
     <div id="orderList"></div>
@@ -126,126 +210,287 @@ input,select{width:90%;padding:12px;margin:8px;border-radius:8px;border:1px soli
 
   <div>
     <button class="main" onclick="copyOrder()">העתק לקבלה</button>
-    <button class="main" onclick="finishOrder()">סיים הזמנה</button>
+    <button class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>
     <button class="main" onclick="resetAll()">איפוס</button>
   </div>
+
+  <div class="footer">
+    כל הזכויות שמורות ל-Messineo על בניית האפליקציה
+    <br><br><br><br>
+  </div>
 </div>
 
-<div id="adminPage" class="admin-panel hidden">
-  <h2>פאנל מנהלים</h2>
-  <div class="notice">הערה חשובה: זו גרסה פשוטה שמתאימה ל־RP. בשביל אבטחה אמיתית צריך Supabase Auth / שרת צד אחורי.</div>
-  <div>
-    <button class="secondary" onclick="loadAdminData()">רענן נתונים</button>
-    <button class="secondary" onclick="filterThisWeek()">השבוע</button>
-    <button class="secondary" onclick="filterAll()">הכל</button>
+<!-- ADMIN SCREEN -->
+<div id="adminScreen" class="hidden">
+  <div id="adminLoginView" class="adminLoginBox">
+    <h1>פאנל מנהלים</h1>
+    <p style="opacity:.8">הכנס סיסמת מנהל</p>
+    <input id="adminPasswordInput" type="password" placeholder="סיסמה">
+    <button class="main" onclick="adminLogin()">כניסה</button>
+    <button class="secondary" onclick="backToPosOrLogin()">חזרה</button>
   </div>
 
-  <div class="admin-cards">
-    <div class="stat">סה"כ מכירות<b id="statSales">₪0</b></div>
-    <div class="stat">סה"כ טיפ<b id="statTips">₪0</b></div>
-    <div class="stat">שכר עובדים 25%<b id="statCommission">₪0</b></div>
-    <div class="stat">מספר הזמנות<b id="statOrders">0</b></div>
+  <div id="adminDashboard" class="adminWrap hidden">
+    <div class="adminHeader">
+      <h1>📊 פאנל מנהלים Red Ball</h1>
+      <div>
+        <button class="secondary" onclick="loadOrders()">רענן</button>
+        <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label>טווח:</label>
+      <select id="rangeFilter" onchange="applyFilters()">
+        <option value="today">היום</option>
+        <option value="week" selected>השבוע</option>
+        <option value="month">החודש</option>
+        <option value="all">הכל</option>
+        <option value="custom">מותאם</option>
+      </select>
+      <label>מתאריך:</label>
+      <input type="date" id="fromDate" onchange="applyFilters()">
+      <label>עד תאריך:</label>
+      <input type="date" id="toDate" onchange="applyFilters()">
+      <label>עובד:</label>
+      <select id="adminEmployeeFilter" onchange="applyFilters()">
+        <option value="all">כולם</option>
+      </select>
+      <input id="searchInput" placeholder="חיפוש בפריטים..." oninput="applyFilters()">
+    </div>
+
+    <div class="statsGrid">
+      <div class="statCard">סה"כ מכירות<div class="num" id="statTotal">₪0</div></div>
+      <div class="statCard">שכר עובדים 25%<div class="num" id="statSalary">₪0</div></div>
+      <div class="statCard">כמות הזמנות<div class="num" id="statOrders">0</div></div>
+      <div class="statCard">ממוצע להזמנה<div class="num" id="statAvg">₪0</div></div>
+    </div>
+
+    <h2>סיכום לפי עובד</h2>
+    <div class="tableBox">
+      <table>
+        <thead><tr><th>עובד</th><th>כמות הזמנות</th><th>סה"כ מכירות</th><th>שכר 25%</th></tr></thead>
+        <tbody id="employeeSummaryBody"></tbody>
+      </table>
+    </div>
+
+    <h2>כל ההזמנות</h2>
+    <div class="tableBox">
+      <table>
+        <thead><tr><th>תאריך</th><th>עובד</th><th>פריטים</th><th>ביניים</th><th>טיפ</th><th>סה"כ</th><th>שכר</th><th>פעולות</th></tr></thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+    </div>
   </div>
-
-  <h3>סיכום לפי עובד</h3>
-  <table class="admin-table">
-    <thead><tr><th>עובד</th><th>מכירות</th><th>טיפים</th><th>שכר 25%</th><th>כמות הזמנות</th></tr></thead>
-    <tbody id="employeeSummaryBody"></tbody>
-  </table>
-
-  <h3>כל ההזמנות</h3>
-  <table class="admin-table">
-    <thead><tr><th>תאריך</th><th>עובד</th><th>פריטים</th><th>סכום</th><th>טיפ</th><th>סה"כ</th><th>25%</th></tr></thead>
-    <tbody id="ordersBody"></tbody>
-  </table>
 </div>
 
+<!-- EDIT MODAL -->
+<div id="editModal" class="modalBackdrop hidden">
+  <div class="modal">
+    <h2>עריכת הזמנה</h2>
+    <input type="hidden" id="editOrderId">
+    <div class="modalRow">
+      <div>
+        <label>עובד</label><br>
+        <select id="editEmployee" style="width:100%"></select>
+      </div>
+      <div>
+        <label>סה"כ</label><br>
+        <input id="editTotal" type="number" style="width:100%">
+      </div>
+    </div>
+    <div class="modalRow">
+      <div>
+        <label>סיכום ביניים</label><br>
+        <input id="editSubtotal" type="number" style="width:100%">
+      </div>
+      <div>
+        <label>טיפ</label><br>
+        <input id="editTip" type="number" style="width:100%">
+      </div>
+    </div>
+    <label>פריטים / הערה</label>
+    <textarea id="editItemsText"></textarea>
+    <div style="margin-top:12px;text-align:left">
+      <button class="secondary" onclick="closeEditModal()">ביטול</button>
+      <button class="success" onclick="saveEditedOrder()">שמור שינוי</button>
+    </div>
+  </div>
 </div>
-
-<div class="footer">כל הזכויות שמורות ל-Messineo על בניית האפליקציה<br><br><br><br></div>
 
 <script>
 /* =======================
-   הגדרות Supabase
-   ======================= */
-const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
-const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
-const ADMIN_PASS = "1234"; // תשנה לסיסמה שלך
+   CONFIG
+======================= */
+const SUPABASE_URL = "https://eqtgyxabuosyinnhairr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_NGc9M7HpJ4biIkTLSys-nw_qj1N2ZtA";
 
-let sb = null;
-function isSupabaseConfigured(){
-  return !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_") && window.supabase;
-}
-if(isSupabaseConfigured()){
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-let currentEmployee = localStorage.getItem("redball_employee") || "";
-let adminFilterMode = "week";
-let allOrders = [];
+// שנה פה את סיסמת המנהל אם תרצה
+const ADMIN_PASSWORD = "1234";
+
+// להוספת עובד חדש - פשוט הוסף שם לרשימה הזאת
+const WORKERS = ["Sani", "Peter", "Noa", "Julia", "Eden", "Talya", "Fantoki"];
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const menuData={
-"משחקים":[{name:"שולחן סנוקר",price:1000},{name:"מסלול באולינג",price:1000}],
-"מבצעים":[{name:"מבצע שתיה קלה (10)",price:1000},{name:"מבצע נקניקיה (10)",price:1000}],
-"שתיה קלה":[{name:"מיץ פירות",price:200},{name:"ברד",price:200},{name:"לימונדה",price:200}],
-"אוכל":[{name:"נקניקיה",price:200}],
-"שתיה חריפה":[{name:"וודקה רדבול",price:1000},{name:"ויסקי קולה",price:1000},{name:"טקילה",price:1000},{name:"גין טוניק",price:1000},{name:"מוחיטו",price:1000},{name:"פינה קולדה",price:1000},{name:"מרטיני תפוחים",price:1000},{name:"מרטיני לבן",price:1000}],
-"צייסרים ובירות":[{name:"בירה",price:600},{name:"שוט ויסקי",price:600},{name:"שוט וודקה",price:600},{name:"שוט ייאגר",price:600}],
-"בקבוקים":[{name:"ויסקי",price:1600},{name:"רום",price:1600},{name:"וודקה",price:1600},{name:"ייגרמייסטר",price:1600}]
+"משחקים":[
+{name:"שולחן סנוקר",price:1000},
+{name:"מסלול באולינג",price:1000}
+],
+"מבצעים":[
+{name:"מבצע שתיה קלה (10)",price:1000},
+{name:"מבצע נקניקיה (10)",price:1000},
+],
+"שתיה קלה":[
+{name:"מיץ פירות",price:200},
+{name:"ברד",price:200},
+{name:"לימונדה",price:200}
+],
+"אוכל":[
+{name:"נקניקיה",price:200}
+],
+"שתיה חריפה":[
+{name:"וודקה רדבול",price:1000},
+{name:"ויסקי קולה",price:1000},
+{name:"טקילה",price:1000},
+{name:"גין טוניק",price:1000},
+{name:"מוחיטו",price:1000},
+{name:"פינה קולדה",price:1000},
+{name:"מרטיני תפוחים",price:1000},
+{name:"מרטיני לבן",price:1000}
+],
+"צייסרים ובירות":[
+{name:"בירה",price:600},
+{name:"שוט ויסקי",price:600},
+{name:"שוט וודקה",price:600},
+{name:"שוט ייאגר",price:600},
+],
+"בקבוקים":[
+{name:"ויסקי",price:1600},
+{name:"רום",price:1600},
+{name:"וודקה",price:1600},
+{name:"ייגרמייסטר",price:1600}
+],
 };
 
 let cart={};
 let tipPercent=0;
+let currentEmployee=localStorage.getItem("redball_employee") || "";
+let allOrders=[];
+let filteredOrders=[];
+let menuBuilt=false;
 
-function initEmployee(){
-  // אם כבר נבחר עובד בעבר בדפדפן הזה — נכנסים ישר לקופה
-  if(currentEmployee){
-    enterCashier(currentEmployee);
-  }
+/* =======================
+   INIT
+======================= */
+document.addEventListener("DOMContentLoaded", () => {
+  fillWorkerSelects();
+  buildMenu();
+  if(currentEmployee){ showPos(); } else { showLogin(); }
+});
+
+function fillWorkerSelects(){
+  const selects = [document.getElementById("employeeSelect"), document.getElementById("adminEmployeeFilter"), document.getElementById("editEmployee")];
+  selects.forEach(sel => {
+    if(!sel) return;
+    const keepFirst = sel.id === "employeeSelect" ? '<option value="">בחר עובד...</option>' : (sel.id === "adminEmployeeFilter" ? '<option value="all">כולם</option>' : '');
+    sel.innerHTML = keepFirst + WORKERS.map(w=>`<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
+  });
 }
-function enterCashier(name){
-  currentEmployee = name;
-  localStorage.setItem("redball_employee", name);
-  document.getElementById("employeeNameLabel").innerText = name;
-  document.getElementById("employeePage").classList.add("hidden");
-  document.getElementById("mainApp").classList.remove("hidden");
-  showCashier();
+
+function showLogin(){
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("posScreen").classList.add("hidden");
+  document.getElementById("adminScreen").classList.add("hidden");
 }
-function saveEmployeeAndEnter(){
-  const name = document.getElementById("employeeSelect").value.trim();
-  if(!name){alert("בחר עובד");return;}
-  enterCashier(name);
+
+function showPos(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("posScreen").classList.remove("hidden");
+  document.getElementById("adminScreen").classList.add("hidden");
+  document.getElementById("employeeBadge").innerText = "👤 עובד: " + currentEmployee;
+  updateTotal();
 }
-function backToEmployeePage(){
+
+function loginEmployee(){
+  const selected = document.getElementById("employeeSelect").value;
+  if(!selected){ alert("בחר עובד מהרשימה"); return; }
+  currentEmployee = selected;
+  localStorage.setItem("redball_employee", currentEmployee);
+  showPos();
+}
+
+function switchEmployee(){
   localStorage.removeItem("redball_employee");
-  currentEmployee = "";
-  document.getElementById("employeeSelect").value = "";
-  document.getElementById("mainApp").classList.add("hidden");
-  document.getElementById("adminPage").classList.add("hidden");
-  document.getElementById("cashierPage").classList.remove("hidden");
-  document.getElementById("employeePage").classList.remove("hidden");
+  currentEmployee="";
+  showLogin();
+}
+
+/* =======================
+   MENU / POS
+======================= */
+function buildMenu(){
+  if(menuBuilt) return;
+  const container=document.getElementById("menu");
+  const wrapper=document.createElement("div");
+  wrapper.className="sections-wrapper";
+  const topSections=document.createElement("div");
+  topSections.className="top-sections";
+  const middleSections=document.createElement("div");
+  middleSections.className="top-sections";
+  const bottomSections=document.createElement("div");
+
+  for(let category in menuData){
+    let section=document.createElement("div");
+    section.className = category==="שתיה קלה" ? "section drinks-row" : "section";
+    section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`;
+    let grid=section.querySelector(".grid");
+
+    menuData[category].forEach(item=>{
+      cart[item.name]=0;
+      let card=document.createElement("div");
+      card.className="card";
+      card.id="card_"+safeId(item.name);
+      card.innerHTML=`
+        <div class="title">${item.name}</div>
+        <div class="price">₪${item.price}</div>
+        <div class="controls">
+          <button class="btn" onclick="changeQty('${escapeJs(item.name)}',-1)">-</button>
+          <div class="qty" id="qty_${safeId(item.name)}">0</div>
+          <button class="btn" onclick="changeQty('${escapeJs(item.name)}',1)">+</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    if(category==="משחקים" || category==="מבצעים") topSections.appendChild(section);
+    else if(category==="שתיה קלה" || category==="אוכל") middleSections.appendChild(section);
+    else bottomSections.appendChild(section);
+  }
+  wrapper.appendChild(topSections);
+  wrapper.appendChild(middleSections);
+  wrapper.appendChild(bottomSections);
+  container.appendChild(wrapper);
+  menuBuilt=true;
 }
 
 function calculateTotals(){
-  let subtotal=0, softQty=0, foodQty=0;
-  menuData["שתיה קלה"].forEach(i=>softQty+=cart[i.name]);
-  menuData["אוכל"].forEach(i=>foodQty+=cart[i.name]);
+  let subtotal=0;
+  let softQty=0;
+  let foodQty=0;
+  menuData["שתיה קלה"].forEach(i=>softQty+=(cart[i.name]||0));
+  menuData["אוכל"].forEach(i=>foodQty+=(cart[i.name]||0));
   subtotal+=Math.floor(softQty/10)*1000;
   subtotal+=(softQty%10)*200;
   subtotal+=Math.floor(foodQty/10)*1000;
   subtotal+=(foodQty%10)*200;
   for(let category in menuData){
     if(category==="שתיה קלה" || category==="אוכל") continue;
-    menuData[category].forEach(item=>{subtotal+=cart[item.name]*item.price;});
+    menuData[category].forEach(item=> subtotal+=(cart[item.name]||0)*item.price);
   }
   let tip=subtotal*(tipPercent/100);
   let total=subtotal+tip;
-  return {subtotal:Math.round(subtotal),tip:Math.round(tip),total:Math.round(total),commission:Math.round(subtotal*0.25)};
-}
-
-function getCartLines(){
-  let lines=[];
-  for(let item in cart){if(cart[item]>0){lines.push(item+" x"+cart[item]);}}
-  return lines;
+  return {subtotal:Math.round(subtotal),tip:Math.round(tip),total:Math.round(total)};
 }
 
 function updateOrderPanel(calc){
@@ -260,173 +505,267 @@ function updateOrderPanel(calc){
     }
   }
   let summary="";
-  if(calc.tip === 0){summary = `<b># ‎לתשלום: ₪${calc.total}</b>`;}
-  else{summary = `סיכום ביניים: ₪${calc.subtotal}<br>טיפ: ₪${calc.tip}<br><b># ‎לתשלום: ₪${calc.total}</b>`;}
+  if(calc.tip === 0){
+    summary = `<b># ‎לתשלום: ₪${calc.total}</b>`;
+  }else{
+    summary = `סיכום ביניים: ₪${calc.subtotal}<br>טיפ: ₪${calc.tip}<br><b># ‎לתשלום: ₪${calc.total}</b>`;
+  }
   document.getElementById("orderSummary").innerHTML=summary;
 }
 
-async function saveSaleToSupabase(calc, lines){
-  if(!sb){
-    throw new Error("לא הוגדרו פרטי Supabase בקוד, לכן המכירה לא נשמרה. ההעתקה לקבלה עדיין עובדת.");
-  }
-  const payload = {
-    employee_name: currentEmployee,
-    items_text: lines.join("\n"),
-    items_json: JSON.stringify(cart),
-    subtotal: calc.subtotal,
-    tip: calc.tip,
-    total: calc.total,
-    commission: calc.commission
-  };
-  const { error } = await sb.from("orders").insert(payload);
-  if(error) throw error;
+function setTipPercent(p,btn){
+  tipPercent=p;
+  document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));
+  btn.classList.add("tip-active");
+  updateTotal();
 }
 
-async function finishOrder(){
-  if(!currentEmployee){backToEmployeePage();return;}
-  let lines=getCartLines();
-  if(lines.length===0){alert("אין פריטים בהזמנה");return;}
+function changeQty(name,amount){
+  cart[name]=(cart[name]||0)+amount;
+  if(cart[name]<0)cart[name]=0;
+  document.getElementById("qty_"+safeId(name)).innerText=cart[name];
+  let card=document.getElementById("card_"+safeId(name));
+  if(cart[name]>0) card.classList.add("active");
+  else card.classList.remove("active");
+  updateTotal();
+}
+
+function updateTotal(){
   let calc=calculateTotals();
-  let text=lines.join("\n")+"\n\n";
-  if(calc.tip === 0){text += "# \u200Eלתשלום: ₪"+calc.total;}
-  else{
+  document.getElementById("total").innerText="סה\"כ: "+calc.total;
+  updateOrderPanel(calc);
+}
+
+function resetAll(){
+  for(let item in cart){
+    cart[item]=0;
+    const qtyEl=document.getElementById("qty_"+safeId(item));
+    if(qtyEl) qtyEl.innerText=0;
+    let card=document.getElementById("card_"+safeId(item));
+    if(card)card.classList.remove("active");
+  }
+  tipPercent=0;
+  document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));
+  updateTotal();
+}
+
+function getCartItemsArray(){
+  const items=[];
+  for(let item in cart){
+    if(cart[item]>0) items.push({name:item, qty:cart[item]});
+  }
+  return items;
+}
+function hasItems(){ return getCartItemsArray().length>0; }
+
+function buildFullOrderText(){
+  let lines=[];
+  for(let item in cart){ if(cart[item]>0) lines.push(item+" x"+cart[item]); }
+  let calc=calculateTotals();
+  let text=`עובד: ${currentEmployee}\n` + lines.join("\n") + "\n\n";
+  if(calc.tip === 0){
+    text += "# \u200Eלתשלום: ₪"+calc.total;
+  }else{
     text += "סיכום ביניים: ₪"+calc.subtotal+"\n";
     text += "טיפ: ₪"+calc.tip+"\n";
     text += "# \u200Eלתשלום: ₪"+calc.total;
   }
   text += "\n------------------\n";
-  text += "עובד: "+currentEmployee;
-
-  try{
-    await saveSaleToSupabase(calc, lines);
-    await navigator.clipboard.writeText(text);
-    alert("ההזמנה נשמרה והועתקה בהצלחה");
-    resetAll();
-  }catch(err){
-    console.error(err);
-    try{
-      await navigator.clipboard.writeText(text);
-      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה: "+err.message);
-    }catch(copyErr){
-      alert("ההעתקה/שמירה נכשלה: "+err.message);
-    }
-  }
+  return text;
 }
 
-const container=document.getElementById("menu");
-const wrapper=document.createElement("div"); wrapper.className="sections-wrapper";
-const topSections=document.createElement("div"); topSections.className="top-sections";
-const middleSections=document.createElement("div"); middleSections.className="top-sections";
-const bottomSections=document.createElement("div");
+async function copyFullOrderAndSave(){
+  if(!currentEmployee){ alert("אין עובד מחובר"); return; }
+  if(!hasItems()){ alert("אין פריטים בהזמנה"); return; }
+  const text = buildFullOrderText();
+  const calc = calculateTotals();
+  const items = getCartItemsArray();
 
-for(let category in menuData){
-  let section=document.createElement("div");
-  section.className = category==="שתיה קלה" ? "section drinks-row" : "section";
-  section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`;
-  let grid=section.querySelector(".grid");
-  menuData[category].forEach(item=>{
-    cart[item.name]=0;
-    let card=document.createElement("div");
-    card.className="card";
-    card.id="card_"+item.name;
-    card.innerHTML=`<div class="title">${item.name}</div><div class="price">₪${item.price}</div><div class="controls"><button class="btn" onclick="changeQty('${item.name}',-1)">-</button><div class="qty" id="${item.name}">0</div><button class="btn" onclick="changeQty('${item.name}',1)">+</button></div>`;
-    grid.appendChild(card);
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ console.warn("Clipboard failed", e); }
+
+  const { error } = await supabaseClient.from("orders").insert({
+    employee: currentEmployee,
+    items,
+    subtotal: calc.subtotal,
+    tip: calc.tip,
+    total: calc.total
   });
-  if(category==="משחקים" || category==="מבצעים") topSections.appendChild(section);
-  else if(category==="שתיה קלה" || category==="אוכל") middleSections.appendChild(section);
-  else bottomSections.appendChild(section);
-}
-wrapper.appendChild(topSections); wrapper.appendChild(middleSections); wrapper.appendChild(bottomSections); container.appendChild(wrapper);
 
-function setTipPercent(p,btn){tipPercent=p;document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));btn.classList.add("tip-active");updateTotal();}
-function changeQty(name,amount){cart[name]+=amount;if(cart[name]<0)cart[name]=0;document.getElementById(name).innerText=cart[name];let card=document.getElementById("card_"+name);if(cart[name]>0){card.classList.add("active")}else{card.classList.remove("active")}updateTotal();}
-function updateTotal(){let calc=calculateTotals();document.getElementById("total").innerText="סה\"כ: "+calc.total;updateOrderPanel(calc);}
-function resetAll(){for(let item in cart){cart[item]=0;document.getElementById(item).innerText=0;let card=document.getElementById("card_"+item);if(card)card.classList.remove("active");}tipPercent=0;document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));updateTotal();}
-async function copyOrder(){
-  let items=getCartLines();
-  if(items.length===0){alert("אין פריטים בהזמנה");return;}
-  try{
-    await navigator.clipboard.writeText(items.join(", "));
-    alert("הקבלה הועתקה");
-  }catch(e){
-    alert("העתקה נכשלה. תפתח את האתר דרך HTTPS או GitHub Pages ולא כקובץ מקומי.");
+  if(error){
+    alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\n" + error.message + "\n\nכנראה חסרה טבלת orders או הרשאות RLS ב-Supabase.");
+    return;
   }
+  resetAll();
+  alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
 }
 
-function openAdminLogin(){document.getElementById("adminLoginModal").classList.remove("hidden");}
-function closeAdminLogin(){document.getElementById("adminLoginModal").classList.add("hidden");}
+function copyOrder(){
+  let items=[];
+  for(let item in cart){ if(cart[item]>0) items.push(item+" x"+cart[item]); }
+  if(items.length===0){ alert("אין פריטים להעתקה"); return; }
+  navigator.clipboard.writeText(items.join(", "));
+  alert("הקבלה הועתקה");
+}
+
+/* =======================
+   ADMIN
+======================= */
+function openAdminLogin(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("posScreen").classList.add("hidden");
+  document.getElementById("adminScreen").classList.remove("hidden");
+  document.getElementById("adminLoginView").classList.remove("hidden");
+  document.getElementById("adminDashboard").classList.add("hidden");
+  document.getElementById("adminPasswordInput").value="";
+  setTimeout(()=>document.getElementById("adminPasswordInput").focus(),50);
+}
+
 function adminLogin(){
   const pass=document.getElementById("adminPasswordInput").value;
-  if(pass!==ADMIN_PASS){alert("סיסמה שגויה");return;}
-  closeAdminLogin();
-  showAdmin();
+  if(pass!==ADMIN_PASSWORD){ alert("סיסמה שגויה"); return; }
+  document.getElementById("adminLoginView").classList.add("hidden");
+  document.getElementById("adminDashboard").classList.remove("hidden");
+  loadOrders();
 }
-function showCashier(){document.getElementById("cashierPage").classList.remove("hidden");document.getElementById("adminPage").classList.add("hidden");}
-function showAdmin(){document.getElementById("employeePage").classList.add("hidden");document.getElementById("mainApp").classList.remove("hidden");document.getElementById("cashierPage").classList.add("hidden");document.getElementById("adminPage").classList.remove("hidden");loadAdminData();}
-function filterThisWeek(){adminFilterMode="week";renderAdmin();}
-function filterAll(){adminFilterMode="all";renderAdmin();}
 
-async function loadAdminData(){
-  try{
-    if(!sb){ alert("עדיין לא הוגדר Supabase בקוד, לכן אין נתונים לפאנל מנהלים."); return; }
-    const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending:false });
-    if(error) throw error;
-    allOrders = data || [];
-    renderAdmin();
-  }catch(err){
-    console.error(err);
-    alert("טעינת הנתונים נכשלה: "+err.message);
+function backToPosOrLogin(){
+  if(currentEmployee) showPos(); else showLogin();
+}
+
+async function loadOrders(){
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending:false });
+  if(error){ alert("שגיאה בטעינת הזמנות: " + error.message); return; }
+  allOrders=data || [];
+  applyFilters();
+}
+
+function applyFilters(){
+  const range=document.getElementById("rangeFilter").value;
+  const employee=document.getElementById("adminEmployeeFilter").value;
+  const search=(document.getElementById("searchInput").value||"").toLowerCase();
+  let from=null, to=null;
+
+  const now=new Date();
+  if(range==="today"){
+    from=startOfDay(now); to=endOfDay(now);
+  }else if(range==="week"){
+    from=startOfWeekSunday(now); to=endOfDay(now);
+  }else if(range==="month"){
+    from=new Date(now.getFullYear(), now.getMonth(), 1); to=endOfDay(now);
+  }else if(range==="custom"){
+    const f=document.getElementById("fromDate").value;
+    const t=document.getElementById("toDate").value;
+    if(f) from=startOfDay(new Date(f));
+    if(t) to=endOfDay(new Date(t));
   }
+
+  filteredOrders = allOrders.filter(o=>{
+    const d=new Date(o.created_at);
+    if(from && d<from) return false;
+    if(to && d>to) return false;
+    if(employee!=="all" && o.employee!==employee) return false;
+    if(search){
+      const itemTxt=itemsToText(o.items).toLowerCase();
+      if(!itemTxt.includes(search) && !(o.employee||"").toLowerCase().includes(search)) return false;
+    }
+    return true;
+  });
+  renderAdmin();
 }
-function startOfWeek(d){
-  const date=new Date(d);
-  const day=date.getDay();
-  const diff=date.getDate()-day;
-  const start=new Date(date.setDate(diff));
-  start.setHours(0,0,0,0);
-  return start;
-}
-function getFilteredOrders(){
-  if(adminFilterMode!=="week") return allOrders;
-  const start=startOfWeek(new Date());
-  return allOrders.filter(o=>new Date(o.created_at)>=start);
-}
-function money(n){return "₪"+Number(n||0).toLocaleString("he-IL");}
+
 function renderAdmin(){
-  const orders=getFilteredOrders();
-  let totalSales=0,totalTips=0,totalCommission=0;
-  let byEmployee={};
-  orders.forEach(o=>{
-    totalSales+=Number(o.subtotal||0);
-    totalTips+=Number(o.tip||0);
-    totalCommission+=Number(o.commission||0);
-    const emp=o.employee_name||"לא ידוע";
-    if(!byEmployee[emp]) byEmployee[emp]={sales:0,tips:0,commission:0,count:0};
-    byEmployee[emp].sales+=Number(o.subtotal||0);
-    byEmployee[emp].tips+=Number(o.tip||0);
-    byEmployee[emp].commission+=Number(o.commission||0);
-    byEmployee[emp].count++;
-  });
-  document.getElementById("statSales").innerText=money(totalSales);
-  document.getElementById("statTips").innerText=money(totalTips);
-  document.getElementById("statCommission").innerText=money(totalCommission);
-  document.getElementById("statOrders").innerText=orders.length;
+  const total=filteredOrders.reduce((s,o)=>s+Number(o.total||0),0);
+  const salary=total*0.25;
+  const count=filteredOrders.length;
+  const avg=count ? total/count : 0;
+  document.getElementById("statTotal").innerText=formatMoney(total);
+  document.getElementById("statSalary").innerText=formatMoney(salary);
+  document.getElementById("statOrders").innerText=count;
+  document.getElementById("statAvg").innerText=formatMoney(avg);
 
-  const summaryBody=document.getElementById("employeeSummaryBody"); summaryBody.innerHTML="";
-  Object.keys(byEmployee).sort().forEach(emp=>{
-    const s=byEmployee[emp];
-    summaryBody.innerHTML += `<tr><td>${emp}</td><td>${money(s.sales)}</td><td>${money(s.tips)}</td><td>${money(s.commission)}</td><td>${s.count}</td></tr>`;
+  const byEmp={};
+  filteredOrders.forEach(o=>{
+    if(!byEmp[o.employee]) byEmp[o.employee]={count:0,total:0};
+    byEmp[o.employee].count++;
+    byEmp[o.employee].total += Number(o.total||0);
   });
+  document.getElementById("employeeSummaryBody").innerHTML = Object.keys(byEmp).map(emp=>`
+    <tr><td>${escapeHtml(emp)}</td><td>${byEmp[emp].count}</td><td>${formatMoney(byEmp[emp].total)}</td><td>${formatMoney(byEmp[emp].total*0.25)}</td></tr>
+  `).join("") || `<tr><td colspan="4">אין נתונים</td></tr>`;
 
-  const ordersBody=document.getElementById("ordersBody"); ordersBody.innerHTML="";
-  orders.forEach(o=>{
-    const date=new Date(o.created_at).toLocaleString("he-IL");
-    ordersBody.innerHTML += `<tr><td>${date}</td><td>${o.employee_name||""}</td><td>${(o.items_text||"").replaceAll("\n","<br>")}</td><td>${money(o.subtotal)}</td><td>${money(o.tip)}</td><td>${money(o.total)}</td><td>${money(o.commission)}</td></tr>`;
-  });
+  document.getElementById("ordersTableBody").innerHTML = filteredOrders.map(o=>`
+    <tr>
+      <td>${formatDate(o.created_at)}</td>
+      <td>${escapeHtml(o.employee||"")}</td>
+      <td class="itemsText">${escapeHtml(itemsToText(o.items))}</td>
+      <td>${formatMoney(o.subtotal||0)}</td>
+      <td>${formatMoney(o.tip||0)}</td>
+      <td>${formatMoney(o.total||0)}</td>
+      <td>${formatMoney(Number(o.total||0)*0.25)}</td>
+      <td>
+        <button class="secondary" onclick="openEditModal('${o.id}')">ערוך</button>
+        <button class="danger" onclick="deleteOrder('${o.id}')">מחק</button>
+      </td>
+    </tr>
+  `).join("") || `<tr><td colspan="8">אין הזמנות בטווח הזה</td></tr>`;
 }
 
-initEmployee();
-updateTotal();
+function openEditModal(id){
+  const o=allOrders.find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById("editOrderId").value=o.id;
+  document.getElementById("editEmployee").value=o.employee;
+  document.getElementById("editSubtotal").value=o.subtotal||0;
+  document.getElementById("editTip").value=o.tip||0;
+  document.getElementById("editTotal").value=o.total||0;
+  document.getElementById("editItemsText").value=itemsToText(o.items);
+  document.getElementById("editModal").classList.remove("hidden");
+}
+function closeEditModal(){ document.getElementById("editModal").classList.add("hidden"); }
+
+async function saveEditedOrder(){
+  const id=document.getElementById("editOrderId").value;
+  const employee=document.getElementById("editEmployee").value;
+  const subtotal=Number(document.getElementById("editSubtotal").value||0);
+  const tip=Number(document.getElementById("editTip").value||0);
+  const total=Number(document.getElementById("editTotal").value||0);
+  const itemsText=document.getElementById("editItemsText").value.trim();
+  const items=[{name:"עריכה ידנית", qty:1, note:itemsText}];
+  const { error } = await supabaseClient.from("orders").update({employee, subtotal, tip, total, items}).eq("id", id);
+  if(error){ alert("שגיאה בשמירה: " + error.message); return; }
+  closeEditModal();
+  await loadOrders();
+  alert("ההזמנה עודכנה");
+}
+
+async function deleteOrder(id){
+  if(!confirm("בטוח למחוק את ההזמנה?")) return;
+  const { error } = await supabaseClient.from("orders").delete().eq("id", id);
+  if(error){ alert("שגיאה במחיקה: " + error.message); return; }
+  await loadOrders();
+}
+
+/* =======================
+   HELPERS
+======================= */
+function safeId(str){ return str.replace(/[^a-zA-Z0-9א-ת]/g,"_"); }
+function escapeJs(str){ return str.replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+function escapeHtml(str){ return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function formatMoney(n){ return "₪" + Math.round(Number(n||0)).toLocaleString("he-IL"); }
+function formatDate(iso){ return new Date(iso).toLocaleString("he-IL", {dateStyle:"short", timeStyle:"short"}); }
+function itemsToText(items){
+  if(!items) return "";
+  if(typeof items === "string") return items;
+  if(Array.isArray(items)) return items.map(i=> i.note ? i.note : `${i.name} x${i.qty}`).join("\n");
+  return JSON.stringify(items);
+}
+function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0,0,0,0); }
+function endOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999); }
+function startOfWeekSunday(d){ const x=startOfDay(d); x.setDate(x.getDate()-x.getDay()); return x; }
 </script>
 </body>
 </html>
