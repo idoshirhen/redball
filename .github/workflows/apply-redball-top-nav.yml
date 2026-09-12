@@ -1,0 +1,177 @@
+name: Apply Red Ball Top Navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-redball-top-nav.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update Red Ball interface
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          s = path.read_text(encoding='utf-8')
+          marker = 'RED-BALL-TOP-NAV'
+
+          if marker in s:
+              print('Top navigation already applied.')
+              raise SystemExit(0)
+
+          # Same Hebrew font used on the magnets site.
+          font_link = '<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">'
+          supabase_script = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+          if font_link not in s:
+              s = s.replace(supabase_script, supabase_script + '\n' + font_link, 1)
+          s = s.replace('font-family:Arial, sans-serif;', 'font-family:"Rubik", Arial, sans-serif;', 1)
+
+          nav_css = r'''
+          /* RED-BALL-TOP-NAV */
+          .categoryTabs{
+            width:min(1100px, calc(100% - 24px));
+            margin:4px auto 14px;
+            padding:8px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            flex-wrap:nowrap;
+            overflow-x:auto;
+            direction:rtl;
+            scrollbar-width:thin;
+            background:rgba(8,8,8,.88);
+            border:1px solid #2f2f2f;
+            border-radius:12px;
+            position:sticky;
+            top:58px;
+            z-index:8;
+            backdrop-filter:blur(10px);
+          }
+          .categoryTab{
+            flex:0 0 auto;
+            border:1px solid #444;
+            background:#171717;
+            color:#fff;
+            border-radius:9px;
+            padding:9px 14px;
+            font-family:inherit;
+            font-size:14px;
+            font-weight:600;
+            cursor:pointer;
+            transition:.18s ease;
+            white-space:nowrap;
+          }
+          .categoryTab:hover{
+            border-color:#6ed8ff;
+            transform:translateY(-1px);
+          }
+          .categoryTab.active{
+            color:#fff;
+            border-color:#ff4de1;
+            background:linear-gradient(180deg,#ff4de1,#cf2aba);
+            box-shadow:0 0 12px rgba(255,77,225,.35),0 0 18px rgba(110,216,255,.18);
+          }
+          @media(max-width:800px){
+            .categoryTabs{position:static;justify-content:flex-start;}
+          }
+          '''
+          s = s.replace('\n/* ADMIN */', '\n' + nav_css + '\n/* ADMIN */', 1)
+
+          pos_title = '  <h1>🎳🎱 Red Ball 🎱🎳</h1>\n\n  <div id="orderPanel">'
+          nav_html = '  <h1>🎳🎱 Red Ball 🎱🎳</h1>\n\n  <div id="categoryTabs" class="categoryTabs" aria-label="קטגוריות"></div>\n\n  <div id="orderPanel">'
+          if pos_title not in s:
+              raise SystemExit('Could not find POS title insertion point')
+          s = s.replace(pos_title, nav_html, 1)
+
+          s = s.replace('let menuBuilt=false;', 'let menuBuilt=false;\nlet activeMenuCategory="תפריט";', 1)
+
+          build_marker = 'function buildMenu(){'
+          nav_js = r'''
+          function renderCategoryTabs(){
+            const tabs=document.getElementById("categoryTabs");
+            if(!tabs) return;
+            const categories=["תפריט", ...Object.keys(menuData)];
+            tabs.innerHTML=categories.map(category=>`
+              <button class="categoryTab ${category===activeMenuCategory ? "active" : ""}"
+                      onclick="setMenuCategory('${escapeJs(category)}')">
+                ${category}
+              </button>
+            `).join("");
+          }
+
+          function setMenuCategory(category){
+            if(category===activeMenuCategory) return;
+            activeMenuCategory=category;
+            const menu=document.getElementById("menu");
+            if(menu) menu.innerHTML="";
+            menuBuilt=false;
+            buildMenu();
+          }
+
+          '''
+          if build_marker not in s:
+              raise SystemExit('Could not find buildMenu')
+          s = s.replace(build_marker, nav_js + build_marker, 1)
+
+          loop = '  for(let category in menuData){\n'
+          if loop not in s:
+              raise SystemExit('Could not find category loop')
+          s = s.replace(loop, loop + '    if(activeMenuCategory!=="תפריט" && category!==activeMenuCategory) continue;\n', 1)
+
+          s = s.replace('      cart[item.name]=0;', '      if(!(item.name in cart)) cart[item.name]=0;', 1)
+          s = s.replace('      card.className="card";', '      card.className=(cart[item.name]||0)>0 ? "card active" : "card";', 1)
+          s = s.replace('            id="qty_${safeId(item.name)}"\n          >0</div>', '            id="qty_${safeId(item.name)}"\n          >${cart[item.name]||0}</div>', 1)
+
+          old_layout = '''    if(category==="משחקים" || category==="מבצעים"){
+              topSections.appendChild(section);
+            }
+            else if(category==="שתיה קלה" || category==="אוכל"){
+              middleSections.appendChild(section);
+            }
+            else{
+              bottomSections.appendChild(section);
+            }'''
+          new_layout = '''    if(activeMenuCategory!=="תפריט"){
+              bottomSections.appendChild(section);
+            }
+            else if(category==="משחקים" || category==="מבצעים"){
+              topSections.appendChild(section);
+            }
+            else if(category==="שתיה קלה" || category==="אוכל"){
+              middleSections.appendChild(section);
+            }
+            else{
+              bottomSections.appendChild(section);
+            }'''
+          if old_layout not in s:
+              raise SystemExit('Could not find category layout block')
+          s = s.replace(old_layout, new_layout, 1)
+
+          s = s.replace('  menuBuilt=true;\n}', '  menuBuilt=true;\n  renderCategoryTabs();\n}', 1)
+
+          path.write_text(s, encoding='utf-8')
+          print('Red Ball top navigation applied successfully.')
+          PY
+
+      - name: Commit updated index
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add top category navigation and Rubik font"
+          git push
