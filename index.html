@@ -573,45 +573,106 @@ function switchEmployee(){
 ======================= */
 function buildMenu(){
   if(menuBuilt) return;
+
   const container=document.getElementById("menu");
+
   const wrapper=document.createElement("div");
   wrapper.className="sections-wrapper";
+
   const topSections=document.createElement("div");
   topSections.className="top-sections";
+
   const middleSections=document.createElement("div");
   middleSections.className="top-sections";
+
   const bottomSections=document.createElement("div");
 
   for(let category in menuData){
+
     let section=document.createElement("div");
-    section.className = category==="שתיה קלה" ? "section drinks-row" : "section";
-    section.innerHTML=`<h2>${category}</h2><div class="grid"></div>`;
+
+    section.className =
+      category==="שתיה קלה"
+      ? "section drinks-row"
+      : "section";
+
+    section.innerHTML=`
+      <h2>${category}</h2>
+      <div class="grid"></div>
+    `;
+
     let grid=section.querySelector(".grid");
 
+    // מבצעים - כל 3 הפריטים באותה שורה
+    if(category === "מבצעים"){
+      grid.style.flexWrap = "nowrap";
+      grid.style.gap = "10px";
+    }
+
+    // שתיה חריפה - 4 פריטים בשורה + 4 בשורה
+    if(category === "שתיה חריפה"){
+      grid.style.display = "grid";
+      grid.style.gridTemplateColumns = "repeat(4, 180px)";
+      grid.style.justifyContent = "center";
+      grid.style.gap = "16px";
+    }
+
     menuData[category].forEach(item=>{
+
       cart[item.name]=0;
+
       let card=document.createElement("div");
       card.className="card";
       card.id="card_"+safeId(item.name);
+
       card.innerHTML=`
         <div class="title">${item.name}</div>
         <div class="price">₪${item.price}</div>
+
         <div class="controls">
-          <button class="btn" onclick="changeQty('${escapeJs(item.name)}',-1)">-</button>
-          <div class="qty" id="qty_${safeId(item.name)}">0</div>
-          <button class="btn" onclick="changeQty('${escapeJs(item.name)}',1)">+</button>
-        </div>`;
+          <button
+            class="btn"
+            onclick="changeQty('${escapeJs(item.name)}',-1)"
+          >-</button>
+
+          <div
+            class="qty"
+            id="qty_${safeId(item.name)}"
+          >0</div>
+
+          <button
+            class="btn"
+            onclick="changeQty('${escapeJs(item.name)}',1)"
+          >+</button>
+        </div>
+      `;
+
+      // מקטינים רק את כרטיסי "מבצעים"
+      // כדי שכל 3 הפריטים ייכנסו באותה שורה
+      if(category === "מבצעים"){
+        card.style.width = "160px";
+      }
+
       grid.appendChild(card);
     });
 
-    if(category==="משחקים" || category==="מבצעים") topSections.appendChild(section);
-    else if(category==="שתיה קלה" || category==="אוכל") middleSections.appendChild(section);
-    else bottomSections.appendChild(section);
+    if(category==="משחקים" || category==="מבצעים"){
+      topSections.appendChild(section);
+    }
+    else if(category==="שתיה קלה" || category==="אוכל"){
+      middleSections.appendChild(section);
+    }
+    else{
+      bottomSections.appendChild(section);
+    }
   }
+
   wrapper.appendChild(topSections);
   wrapper.appendChild(middleSections);
   wrapper.appendChild(bottomSections);
+
   container.appendChild(wrapper);
+
   menuBuilt=true;
 }
 
