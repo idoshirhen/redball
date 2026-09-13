@@ -1,0 +1,223 @@
+from pathlib import Path
+import re
+
+path = Path('index.html')
+s = path.read_text(encoding='utf-8')
+marker = 'RED-BALL-SECURE-ADMIN-V1'
+if marker in s:
+    print('Security patch already applied.')
+    raise SystemExit(0)
+
+s = s.replace(
+    '<button class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>',
+    '<button id="attendanceBtn" class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>',
+    1
+)
+
+s = s.replace(
+    '<button class="secondary" onclick="loadOrders()">רענן</button>\n        <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>',
+    '<button class="secondary" onclick="loadOrders()">רענן</button>\n        <button class="secondary" onclick="changeAdminPassword()">🔐 שינוי סיסמה</button>\n        <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>',
+    1
+)
+
+s = s.replace(
+    '// שנה פה את סיסמת המנהל אם תרצה\nconst ADMIN_PASSWORD = "1234";\n',
+    '// RED-BALL-SECURE-ADMIN-V1\nconst ADMIN_FUNCTION_URL = SUPABASE_URL + "/functions/v1/redball-admin";\n',
+    1
+)
+
+s = s.replace(
+    'let activeMenuCategory="הכל";',
+    'let activeMenuCategory="הכל";\nlet adminToken=sessionStorage.getItem("redball_admin_token") || "";\nlet orderSaveInProgress=false;',
+    1
+)
+
+insert_before = 'async function loadEmployees(){'
+helper = '''async function adminRequest(action, payload={}, requireToken=true){
+  const headers={
+    "Content-Type":"application/json",
+    "apikey":SUPABASE_ANON_KEY
+  };
+  if(requireToken && adminToken) headers["x-admin-token"]=adminToken;
+
+  const response=await fetch(ADMIN_FUNCTION_URL,{
+    method:"POST",
+    headers,
+    body:JSON.stringify({action,...payload})
+  });
+
+  let data={};
+  try{ data=await response.json(); }catch(e){}
+
+  if(response.status===401 && requireToken){
+    adminToken="";
+    sessionStorage.removeItem("redball_admin_token");
+    throw new Error(data.error || "פג תוקף חיבור המנהל. התחבר מחדש.");
+  }
+  if(!response.ok) throw new Error(data.error || "שגיאת שרת");
+  return data;
+}
+
+'''
+if insert_before not in s:
+    raise SystemExit('Could not find loadEmployees insertion point')
+s = s.replace(insert_before, helper + insert_before, 1)
+
+add_pattern = re.compile(r'async function addEmployee\(\)\{.*?\n\}', re.S)
+add_repl = '''async function addEmployee(){
+  const input=document.getElementById("newEmployeeName");
+  const name=(input?.value||"").trim();
+  if(!name){ alert("רשום שם עובד"); return; }
+  if(WORKERS.some(w=>w.toLowerCase()===name.toLowerCase())){
+    alert("העובד כבר קיים ברשימה");
+    return;
+  }
+  try{
+    await adminRequest("add_employee",{name});
+    input.value="";
+    await refreshEmployeesEverywhere();
+    alert("העובד נוסף ✅");
+  }catch(e){ alert("לא ניתן להוסיף עובד: " + e.message); }
+}'''
+s, n = add_pattern.subn(add_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch addEmployee')
+
+del_emp_pattern = re.compile(r'async function deleteEmployeeByName\(name\)\{.*?\n\}', re.S)
+del_emp_repl = '''async function deleteEmployeeByName(name){
+  if(!confirm(`למחוק את ${name} מרשימת העובדים?\\n\\nההזמנות הישנות שלו לא יימחקו.`)) return;
+  try{
+    await adminRequest("delete_employee",{name});
+    if(currentEmployee===name){
+      currentEmployee="";
+      localStorage.removeItem("redball_employee");
+    }
+    await refreshEmployeesEverywhere();
+    alert("העובד הוסר מהרשימה ✅");
+  }catch(e){ alert("לא ניתן למחוק עובד: " + e.message); }
+}'''
+s, n = del_emp_pattern.subn(del_emp_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch deleteEmployeeByName')
+
+copy_pattern = re.compile(r'async function copyFullOrderAndSave\(\)\{.*?\n\}', re.S)
+copy_repl = '''async function copyFullOrderAndSave(){
+  if(orderSaveInProgress) return;
+  if(!currentEmployee){ alert("אין עובד מחובר"); return; }
+  if(!hasItems()){ alert("אין פריטים בהזמנה"); return; }
+
+  orderSaveInProgress=true;
+  const btn=document.getElementById("attendanceBtn");
+  if(btn){ btn.disabled=true; btn.innerText="שומר..."; }
+
+  try{
+    const text = buildFullOrderText();
+    const calc = calculateTotals();
+    const items = getCartItemsArray();
+
+    try{ await navigator.clipboard.writeText(text); }
+    catch(e){ console.warn("Clipboard failed", e); }
+
+    const { error } = await supabaseClient.from("orders").insert({
+      employee: currentEmployee,
+      items,
+      subtotal: calc.subtotal,
+      tip: calc.tip,
+      total: calc.total
+    });
+
+    if(error){
+      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\\n" + error.message);
+      return;
+    }
+
+    resetAll(true);
+    alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
+  } finally {
+    orderSaveInProgress=false;
+    if(btn){ btn.disabled=false; btn.innerText="העתק להתפקדות"; }
+  }
+}'''
+s, n = copy_pattern.subn(copy_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch copyFullOrderAndSave')
+
+login_pattern = re.compile(r'async function adminLogin\(\)\{.*?\n\}', re.S)
+login_repl = '''async function adminLogin(){
+  const pass=document.getElementById("adminPasswordInput").value;
+  if(!pass){ alert("הכנס סיסמה"); return; }
+  try{
+    const data=await adminRequest("login",{password:pass},false);
+    adminToken=data.token;
+    sessionStorage.setItem("redball_admin_token",adminToken);
+    document.getElementById("adminLoginView").classList.add("hidden");
+    document.getElementById("adminDashboard").classList.remove("hidden");
+    await refreshEmployeesEverywhere();
+    await loadOrders();
+  }catch(e){ alert(e.message || "סיסמה שגויה"); }
+}'''
+s, n = login_pattern.subn(login_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch adminLogin')
+
+load_pattern = re.compile(r'async function loadOrders\(\)\{.*?\n\}', re.S)
+load_repl = '''async function loadOrders(){
+  try{
+    const data=await adminRequest("list_orders");
+    allOrders=data.orders || [];
+    applyFilters();
+  }catch(e){
+    alert("שגיאה בטעינת הזמנות: " + e.message);
+    openAdminLogin();
+  }
+}'''
+s, n = load_pattern.subn(load_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch loadOrders')
+
+save_pattern = re.compile(r'async function saveEditedOrder\(\)\{.*?\n\}', re.S)
+save_repl = '''async function saveEditedOrder(){
+  const id=document.getElementById("editOrderId").value;
+  const employee=document.getElementById("editEmployee").value;
+  const subtotal=Number(document.getElementById("editSubtotal").value||0);
+  const tip=Number(document.getElementById("editTip").value||0);
+  const total=Number(document.getElementById("editTotal").value||0);
+  const itemsText=document.getElementById("editItemsText").value.trim();
+  const items=[{name:"עריכה ידנית", qty:1, note:itemsText}];
+  try{
+    await adminRequest("update_order",{id,patch:{employee,subtotal,tip,total,items}});
+    closeEditModal();
+    await loadOrders();
+    alert("ההזמנה עודכנה ✅");
+  }catch(e){ alert("שגיאה בשמירה: " + e.message); }
+}'''
+s, n = save_pattern.subn(save_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch saveEditedOrder')
+
+delete_pattern = re.compile(r'async function deleteOrder\(id\)\{.*?\n\}', re.S)
+delete_repl = '''async function deleteOrder(id){
+  if(!confirm("בטוח למחוק את ההזמנה?")) return;
+  try{
+    await adminRequest("delete_order",{id});
+    await loadOrders();
+    alert("ההזמנה נמחקה ✅");
+  }catch(e){ alert("שגיאה במחיקה: " + e.message); }
+}'''
+s, n = delete_pattern.subn(delete_repl, s, count=1)
+if n != 1: raise SystemExit('Could not patch deleteOrder')
+
+helper_marker = 'function backToPosOrLogin(){'
+change_pw = '''async function changeAdminPassword(){
+  const first=prompt("הכנס סיסמת מנהל חדשה (לפחות 6 תווים):");
+  if(first===null) return;
+  if(first.length<6){ alert("הסיסמה החדשה חייבת להכיל לפחות 6 תווים"); return; }
+  const second=prompt("הקלד שוב את הסיסמה החדשה:");
+  if(second===null) return;
+  if(first!==second){ alert("הסיסמאות אינן תואמות"); return; }
+  try{
+    await adminRequest("change_password",{newPassword:first});
+    alert("הסיסמה שונתה בהצלחה ✅");
+  }catch(e){ alert("שגיאה בשינוי הסיסמה: " + e.message); }
+}
+
+'''
+if helper_marker not in s: raise SystemExit('Could not find password helper point')
+s = s.replace(helper_marker, change_pw + helper_marker, 1)
+
+path.write_text(s, encoding='utf-8')
+print('Red Ball security patch applied successfully.')
