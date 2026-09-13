@@ -19,6 +19,9 @@ jobs:
       - name: Apply security patch
         run: python .github/scripts/patch_redball_security.py
 
+      - name: Verify security syntax
+        run: python .github/scripts/fix_redball_security_syntax.py
+
       - name: Commit updated index
         run: |
           if git diff --quiet -- index.html; then
@@ -28,5 +31,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Secure admin access and prevent duplicate orders"
+          git commit -m "Fix Red Ball security integration"
           git push
