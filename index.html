@@ -930,8 +930,7 @@ async function copyFullOrderAndSave(){
     });
 
     if(error){
-      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:
-" + error.message);
+      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\n" + error.message);
       return;
     }
 
