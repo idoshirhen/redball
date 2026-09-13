@@ -305,7 +305,7 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
 
   <div class="posActionButtons">
     <button class="main" onclick="copyOrder()">העתק לקבלה</button>
-    <button class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>
+    <button id="attendanceBtn" class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>
     <button class="main" onclick="resetAll()">איפוס</button>
   </div>
 
@@ -330,6 +330,7 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
       <h1>📊 פאנל מנהלים Red Ball</h1>
       <div>
         <button class="secondary" onclick="loadOrders()">רענן</button>
+        <button class="secondary" onclick="changeAdminPassword()">🔐 שינוי סיסמה</button>
         <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>
       </div>
     </div>
@@ -430,8 +431,8 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
 const SUPABASE_URL = "https://eqtgyxabuosyinnhairr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_NGc9M7HpJ4biIkTLSys-nw_qj1N2ZtA";
 
-// שנה פה את סיסמת המנהל אם תרצה
-const ADMIN_PASSWORD = "1234";
+// RED-BALL-SECURE-ADMIN-V1
+const ADMIN_FUNCTION_URL = SUPABASE_URL + "/functions/v1/redball-admin";
 
 // רשימת גיבוי בלבד. בפועל רשימת העובדים נטענת מטבלת employees ב-Supabase.
 const DEFAULT_WORKERS = ["Messineo", "Yakir", "Liron", "Daniel", "Or", "Aviv"];
@@ -489,6 +490,8 @@ let allOrders=[];
 let filteredOrders=[];
 let menuBuilt=false;
 let activeMenuCategory="הכל";
+let adminToken=sessionStorage.getItem("redball_admin_token") || "";
+let orderSaveInProgress=false;
 
 /* =======================
    INIT
@@ -514,6 +517,31 @@ function fillWorkerSelects(){
     const keepFirst = sel.id === "employeeSelect" ? '<option value="">בחר עובד...</option>' : (sel.id === "adminEmployeeFilter" ? '<option value="all">כולם</option>' : '');
     sel.innerHTML = keepFirst + WORKERS.map(w=>`<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
   });
+}
+
+async function adminRequest(action, payload={}, requireToken=true){
+  const headers={
+    "Content-Type":"application/json",
+    "apikey":SUPABASE_ANON_KEY
+  };
+  if(requireToken && adminToken) headers["x-admin-token"]=adminToken;
+
+  const response=await fetch(ADMIN_FUNCTION_URL,{
+    method:"POST",
+    headers,
+    body:JSON.stringify({action,...payload})
+  });
+
+  let data={};
+  try{ data=await response.json(); }catch(e){}
+
+  if(response.status===401 && requireToken){
+    adminToken="";
+    sessionStorage.removeItem("redball_admin_token");
+    throw new Error(data.error || "פג תוקף חיבור המנהל. התחבר מחדש.");
+  }
+  if(!response.ok) throw new Error(data.error || "שגיאת שרת");
+  return data;
 }
 
 async function loadEmployees(){
@@ -569,41 +597,27 @@ async function addEmployee(){
     alert("העובד כבר קיים ברשימה");
     return;
   }
-
-  const { error } = await supabaseClient
-    .from("employees")
-    .insert({name});
-
-  if(error){
-    alert("לא ניתן להוסיף עובד: " + error.message + "\n\nודא שיצרת את טבלת employees והרשאות ה-INSERT ב-Supabase.");
-    return;
-  }
-
-  input.value="";
-  await refreshEmployeesEverywhere();
-  alert("העובד נוסף ✅");
+  try{
+    await adminRequest("add_employee",{name});
+    input.value="";
+    await refreshEmployeesEverywhere();
+    alert("העובד נוסף ✅");
+  }catch(e){ alert("לא ניתן להוסיף עובד: " + e.message); }
 }
 
 async function deleteEmployeeByName(name){
-  if(!confirm(`למחוק את ${name} מרשימת העובדים?\n\nההזמנות הישנות שלו לא יימחקו.`)) return;
+  if(!confirm(`למחוק את ${name} מרשימת העובדים?
 
-  const { error } = await supabaseClient
-    .from("employees")
-    .delete()
-    .eq("name", name);
-
-  if(error){
-    alert("לא ניתן למחוק עובד: " + error.message + "\n\nודא שיש הרשאת DELETE לטבלת employees ב-Supabase.");
-    return;
-  }
-
-  if(currentEmployee===name){
-    currentEmployee="";
-    localStorage.removeItem("redball_employee");
-  }
-
-  await refreshEmployeesEverywhere();
-  alert("העובד הוסר מהרשימה ✅");
+ההזמנות הישנות שלו לא יימחקו.`)) return;
+  try{
+    await adminRequest("delete_employee",{name});
+    if(currentEmployee===name){
+      currentEmployee="";
+      localStorage.removeItem("redball_employee");
+    }
+    await refreshEmployeesEverywhere();
+    alert("העובד הוסר מהרשימה ✅");
+  }catch(e){ alert("לא ניתן למחוק עובד: " + e.message); }
 }
 
 function showLogin(){
@@ -891,29 +905,42 @@ function buildFullOrderText(){
 }
 
 async function copyFullOrderAndSave(){
+  if(orderSaveInProgress) return;
   if(!currentEmployee){ alert("אין עובד מחובר"); return; }
   if(!hasItems()){ alert("אין פריטים בהזמנה"); return; }
-  const text = buildFullOrderText();
-  const calc = calculateTotals();
-  const items = getCartItemsArray();
 
-  try{ await navigator.clipboard.writeText(text); }
-  catch(e){ console.warn("Clipboard failed", e); }
+  orderSaveInProgress=true;
+  const btn=document.getElementById("attendanceBtn");
+  if(btn){ btn.disabled=true; btn.innerText="שומר..."; }
 
-  const { error } = await supabaseClient.from("orders").insert({
-    employee: currentEmployee,
-    items,
-    subtotal: calc.subtotal,
-    tip: calc.tip,
-    total: calc.total
-  });
+  try{
+    const text = buildFullOrderText();
+    const calc = calculateTotals();
+    const items = getCartItemsArray();
 
-  if(error){
-    alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\n" + error.message + "\n\nכנראה חסרה טבלת orders או הרשאות RLS ב-Supabase.");
-    return;
+    try{ await navigator.clipboard.writeText(text); }
+    catch(e){ console.warn("Clipboard failed", e); }
+
+    const { error } = await supabaseClient.from("orders").insert({
+      employee: currentEmployee,
+      items,
+      subtotal: calc.subtotal,
+      tip: calc.tip,
+      total: calc.total
+    });
+
+    if(error){
+      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:
+" + error.message);
+      return;
+    }
+
+    resetAll(true);
+    alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
+  } finally {
+    orderSaveInProgress=false;
+    if(btn){ btn.disabled=false; btn.innerText="העתק להתפקדות"; }
   }
-  resetAll(true);
-  alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
 }
 
 function copyOrder(){
@@ -939,11 +966,29 @@ function openAdminLogin(){
 
 async function adminLogin(){
   const pass=document.getElementById("adminPasswordInput").value;
-  if(pass!==ADMIN_PASSWORD){ alert("סיסמה שגויה"); return; }
-  document.getElementById("adminLoginView").classList.add("hidden");
-  document.getElementById("adminDashboard").classList.remove("hidden");
-  await refreshEmployeesEverywhere();
-  loadOrders();
+  if(!pass){ alert("הכנס סיסמה"); return; }
+  try{
+    const data=await adminRequest("login",{password:pass},false);
+    adminToken=data.token;
+    sessionStorage.setItem("redball_admin_token",adminToken);
+    document.getElementById("adminLoginView").classList.add("hidden");
+    document.getElementById("adminDashboard").classList.remove("hidden");
+    await refreshEmployeesEverywhere();
+    await loadOrders();
+  }catch(e){ alert(e.message || "סיסמה שגויה"); }
+}
+
+async function changeAdminPassword(){
+  const first=prompt("הכנס סיסמת מנהל חדשה (לפחות 6 תווים):");
+  if(first===null) return;
+  if(first.length<6){ alert("הסיסמה החדשה חייבת להכיל לפחות 6 תווים"); return; }
+  const second=prompt("הקלד שוב את הסיסמה החדשה:");
+  if(second===null) return;
+  if(first!==second){ alert("הסיסמאות אינן תואמות"); return; }
+  try{
+    await adminRequest("change_password",{newPassword:first});
+    alert("הסיסמה שונתה בהצלחה ✅");
+  }catch(e){ alert("שגיאה בשינוי הסיסמה: " + e.message); }
 }
 
 function backToPosOrLogin(){
@@ -951,13 +996,14 @@ function backToPosOrLogin(){
 }
 
 async function loadOrders(){
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending:false });
-  if(error){ alert("שגיאה בטעינת הזמנות: " + error.message); return; }
-  allOrders=data || [];
-  applyFilters();
+  try{
+    const data=await adminRequest("list_orders");
+    allOrders=data.orders || [];
+    applyFilters();
+  }catch(e){
+    alert("שגיאה בטעינת הזמנות: " + e.message);
+    openAdminLogin();
+  }
 }
 
 function applyFilters(){
@@ -1052,47 +1098,21 @@ async function saveEditedOrder(){
   const total=Number(document.getElementById("editTotal").value||0);
   const itemsText=document.getElementById("editItemsText").value.trim();
   const items=[{name:"עריכה ידנית", qty:1, note:itemsText}];
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .update({employee, subtotal, tip, total, items})
-    .eq("id", id)
-    .select("id");
-
-  if(error){
-    alert("שגיאה בשמירה:\n" + error.message + "\n\nאם זו שגיאת הרשאות, צריך להריץ את ה-SQL של update/delete ב-Supabase.");
-    return;
-  }
-
-  if(!data || data.length === 0){
-    alert("העריכה לא נשמרה. בדרך כלל זה קורה כי חסרה הרשאת UPDATE בטבלת orders ב-Supabase. תריץ את ה-SQL שצירפתי לך.");
-    return;
-  }
-
-  closeEditModal();
-  await loadOrders();
-  alert("ההזמנה עודכנה ✅");
+  try{
+    await adminRequest("update_order",{id,patch:{employee,subtotal,tip,total,items}});
+    closeEditModal();
+    await loadOrders();
+    alert("ההזמנה עודכנה ✅");
+  }catch(e){ alert("שגיאה בשמירה: " + e.message); }
 }
 
 async function deleteOrder(id){
   if(!confirm("בטוח למחוק את ההזמנה?")) return;
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .delete()
-    .eq("id", id)
-    .select("id");
-
-  if(error){
-    alert("שגיאה במחיקה:\n" + error.message + "\n\nאם זו שגיאת הרשאות, צריך להריץ את ה-SQL של update/delete ב-Supabase.");
-    return;
-  }
-
-  if(!data || data.length === 0){
-    alert("המחיקה לא בוצעה. בדרך כלל זה קורה כי חסרה הרשאת DELETE בטבלת orders ב-Supabase. תריץ את ה-SQL שצירפתי לך.");
-    return;
-  }
-
-  await loadOrders();
-  alert("ההזמנה נמחקה ✅");
+  try{
+    await adminRequest("delete_order",{id});
+    await loadOrders();
+    alert("ההזמנה נמחקה ✅");
+  }catch(e){ alert("שגיאה במחיקה: " + e.message); }
 }
 
 /* =======================
