@@ -1,0 +1,106 @@
+from pathlib import Path
+
+path = Path('index.html')
+s = path.read_text(encoding='utf-8')
+marker = 'RED-BALL-DESIGN-POLISH-V1'
+if marker in s:
+    print('Design polish already applied.')
+    raise SystemExit(0)
+
+old = '.card{width:180px;background:#161616;border:1px solid #333;border-radius:12px;padding:14px;transition:0.2s;}\n.card.active{box-shadow:0 0 12px white,0 0 20px #6ed8ff;border:1px solid #6ed8ff;}\n.title{font-size:15px;}\n.price{font-size:12px;color:#ff6bf2;}'
+new = '''/* RED-BALL-DESIGN-POLISH-V1 */
+.card{
+  width:180px;
+  background:linear-gradient(180deg,rgba(27,27,27,.98),rgba(16,16,16,.98));
+  border:1px solid #303030;
+  border-radius:14px;
+  padding:16px 14px 13px;
+  min-height:126px;
+  box-shadow:0 6px 18px rgba(0,0,0,.20);
+  transition:.18s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  border-color:#454545;
+  box-shadow:0 9px 24px rgba(0,0,0,.30);
+}
+.card.active{
+  border-color:#6ed8ff;
+  box-shadow:0 0 0 1px rgba(110,216,255,.18),0 0 14px rgba(110,216,255,.58),0 0 24px rgba(255,77,225,.13);
+}
+.title{
+  font-size:15px;
+  font-weight:600;
+  line-height:1.25;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.price{
+  display:inline-block;
+  margin-top:2px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  color:#ff78f3;
+  background:rgba(255,77,225,.08);
+}'''
+if old not in s:
+    raise SystemExit('Could not find existing card style block')
+s = s.replace(old, new, 1)
+
+old_panel = '#orderPanel{position:fixed;left:10px;top:82px;width:250px;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:right;direction:rtl;z-index:4;}\n.orderItem{border-bottom:1px solid #333;padding:4px 0;}'
+new_panel = '''#orderPanel{
+  position:fixed;
+  left:10px;
+  top:82px;
+  width:250px;
+  background:linear-gradient(180deg,rgba(18,18,18,.98),rgba(10,10,10,.98));
+  border:1px solid #3a3a3a;
+  border-radius:12px;
+  padding:12px;
+  text-align:right;
+  direction:rtl;
+  z-index:4;
+  box-shadow:0 10px 30px rgba(0,0,0,.34);
+}
+#orderPanel h3{
+  margin:0 0 10px;
+  font-size:17px;
+  color:#fff;
+  padding-bottom:9px;
+  border-bottom:1px solid #303030;
+}
+.orderItem{
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:7px 2px;
+  font-size:13px;
+}
+.orderItem:last-child{border-bottom:none}
+#orderSummary{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #303030;
+  font-size:13px;
+  line-height:1.65;
+}
+#orderSummary b{
+  display:block;
+  margin-top:5px;
+  padding:8px 10px;
+  border-radius:9px;
+  background:rgba(110,216,255,.08);
+  border:1px solid rgba(110,216,255,.22);
+  font-size:17px;
+  font-weight:700;
+  color:#6ed8ff;
+  text-align:center;
+}'''
+if old_panel not in s:
+    raise SystemExit('Could not find existing order panel style block')
+s = s.replace(old_panel, new_panel, 1)
+
+path.write_text(s, encoding='utf-8')
+print('Approved design polish applied successfully.')
