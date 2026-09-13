@@ -1,4 +1,4 @@
-name: Apply Red Ball UX Improvements
+name: Apply Red Ball Security Improvements
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Apply UX improvements
+      - name: Apply security and duplicate-submit protection
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -24,134 +24,236 @@ jobs:
 
           path = Path('index.html')
           s = path.read_text(encoding='utf-8')
-          marker = 'RED-BALL-UX-V2'
-
+          marker = 'RED-BALL-SECURE-ADMIN-V1'
           if marker in s:
-              print('UX improvements already applied.')
+              print('Security patch already applied.')
               raise SystemExit(0)
 
-          # 2) Reserve room for the fixed order panel on medium desktop widths,
-          # without changing the order panel itself.
-          responsive_css = r'''
-          /* RED-BALL-UX-V2 */
-          @media (min-width:901px) and (max-width:1450px){
-            .sections-wrapper,
-            .categoryTabs{
-              width:calc(100% - 290px);
-              max-width:1100px;
-              margin-left:auto;
-              margin-right:10px;
-            }
-          }
-          '''
-          anchor = '\n/* ADMIN */'
-          if anchor not in s:
-              raise SystemExit('Could not find CSS insertion point')
-          s = s.replace(anchor, '\n' + responsive_css + anchor, 1)
-
-          # 3) Rename the all-products state from "תפריט" to "הכל".
-          s = s.replace('let activeMenuCategory="תפריט";', 'let activeMenuCategory="הכל";', 1)
-          s = s.replace('if(activeMenuCategory!=="תפריט" && category!==activeMenuCategory) continue;', 'if(activeMenuCategory!=="הכל" && category!==activeMenuCategory) continue;', 1)
-          s = s.replace('if(activeMenuCategory!=="תפריט"){', 'if(activeMenuCategory!=="הכל"){', 1)
-
-          # 4) Add small icons to category tabs while keeping category keys unchanged.
-          render_pattern = re.compile(
-              r'function renderCategoryTabs\(\)\{.*?\n\}\n\nfunction setMenuCategory\(category\)\{',
-              re.S
+          # Add stable id to attendance button so it can be locked during save.
+          s = s.replace(
+              '<button class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>',
+              '<button id="attendanceBtn" class="main" onclick="copyFullOrderAndSave()">העתק להתפקדות</button>',
+              1
           )
-          render_replacement = r'''function renderCategoryTabs(){
-            const tabs=document.getElementById("categoryTabs");
-            if(!tabs) return;
 
-            const categoryIcons={
-              "משחקים":"🎱",
-              "מבצעים":"🔥",
-              "שתיה קלה":"🥤",
-              "אוכל":"🌭",
-              "שתיה חריפה":"🍸",
-              "צייסרים ובירות":"🍺",
-              "בקבוקים":"🍾"
-            };
+          # Add change-password button in admin header.
+          s = s.replace(
+              '<button class="secondary" onclick="loadOrders()">רענן</button>\n        <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>',
+              '<button class="secondary" onclick="loadOrders()">רענן</button>\n        <button class="secondary" onclick="changeAdminPassword()">🔐 שינוי סיסמה</button>\n        <button class="secondary" onclick="backToPosOrLogin()">חזרה לקופה</button>',
+              1
+          )
 
-            const categories=[
-              {key:"הכל", label:"📋 הכל"},
-              ...Object.keys(menuData).map(key=>({
-                key,
-                label:`${categoryIcons[key] || "•"} ${key}`
-              }))
-            ];
+          # Remove hard-coded admin password and add server endpoint.
+          s = s.replace(
+              '// שנה פה את סיסמת המנהל אם תרצה\nconst ADMIN_PASSWORD = "1234";\n',
+              '// RED-BALL-SECURE-ADMIN-V1\nconst ADMIN_FUNCTION_URL = SUPABASE_URL + "/functions/v1/redball-admin";\n',
+              1
+          )
 
-            tabs.innerHTML=categories.map(category=>`
-              <button class="categoryTab ${category.key===activeMenuCategory ? "active" : ""}"
-                      onclick="setMenuCategory('${escapeJs(category.key)}')">
-                ${category.label}
-              </button>
-            `).join("");
-          }
+          s = s.replace(
+              'let activeMenuCategory="הכל";',
+              'let activeMenuCategory="הכל";\nlet adminToken=sessionStorage.getItem("redball_admin_token") || "";\nlet orderSaveInProgress=false;',
+              1
+          )
 
-          function setMenuCategory(category){'''
-          s, count = render_pattern.subn(render_replacement, s, count=1)
-          if count != 1:
-              raise SystemExit('Could not replace category tab renderer')
+          # Helper for all privileged admin operations.
+          insert_before = 'async function loadEmployees(){'
+          helper = r'''
+async function adminRequest(action, payload={}, requireToken=true){
+  const headers={
+    "Content-Type":"application/json",
+    "apikey":SUPABASE_ANON_KEY
+  };
+  if(requireToken && adminToken) headers["x-admin-token"]=adminToken;
 
-          # 7) Warn before switching employee if an order is active.
-          old_switch = '''function switchEmployee(){
-            localStorage.removeItem("redball_employee");
-            currentEmployee="";
-            showLogin();
-          }'''
-          new_switch = '''function switchEmployee(){
-            if(hasItems() && !confirm("יש הזמנה פעילה. לעבור עובד בכל זאת?")) return;
-            localStorage.removeItem("redball_employee");
-            currentEmployee="";
-            showLogin();
-          }'''
-          if old_switch not in s:
-              raise SystemExit('Could not find switchEmployee function')
-          s = s.replace(old_switch, new_switch, 1)
+  const response=await fetch(ADMIN_FUNCTION_URL,{
+    method:"POST",
+    headers,
+    body:JSON.stringify({action,...payload})
+  });
 
-          # 6) Warn before manual reset, but do not interrupt the automatic reset
-          # after a successfully saved attendance order.
-          old_reset = '''function resetAll(){
-            for(let item in cart){
-              cart[item]=0;
-              const qtyEl=document.getElementById("qty_"+safeId(item));
-              if(qtyEl) qtyEl.innerText=0;
-              let card=document.getElementById("card_"+safeId(item));
-              if(card)card.classList.remove("active");
-            }
-            tipPercent=0;
-            document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));
-            updateTotal();
-          }'''
-          new_reset = '''function resetAll(skipConfirm=false){
-            if(!skipConfirm && hasItems() && !confirm("לאפס את ההזמנה הנוכחית?")) return false;
-            for(let item in cart){
-              cart[item]=0;
-              const qtyEl=document.getElementById("qty_"+safeId(item));
-              if(qtyEl) qtyEl.innerText=0;
-              let card=document.getElementById("card_"+safeId(item));
-              if(card)card.classList.remove("active");
-            }
-            tipPercent=0;
-            document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));
-            updateTotal();
-            return true;
-          }'''
-          if old_reset not in s:
-              raise SystemExit('Could not find resetAll function')
-          s = s.replace(old_reset, new_reset, 1)
+  let data={};
+  try{ data=await response.json(); }catch(e){}
 
-          save_reset = '''  resetAll();
-            alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");'''
-          save_reset_new = '''  resetAll(true);
-            alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");'''
-          if save_reset not in s:
-              raise SystemExit('Could not find automatic reset after save')
-          s = s.replace(save_reset, save_reset_new, 1)
+  if(response.status===401 && requireToken){
+    adminToken="";
+    sessionStorage.removeItem("redball_admin_token");
+    throw new Error(data.error || "פג תוקף חיבור המנהל. התחבר מחדש.");
+  }
+  if(!response.ok) throw new Error(data.error || "שגיאת שרת");
+  return data;
+}
+
+'''
+          if insert_before not in s:
+              raise SystemExit('Could not find loadEmployees insertion point')
+          s = s.replace(insert_before, helper + insert_before, 1)
+
+          # Employee add/delete must now go through secure Edge Function.
+          add_pattern = re.compile(r'async function addEmployee\(\)\{.*?\n\}', re.S)
+          add_repl = r'''async function addEmployee(){
+  const input=document.getElementById("newEmployeeName");
+  const name=(input?.value||"").trim();
+  if(!name){ alert("רשום שם עובד"); return; }
+  if(WORKERS.some(w=>w.toLowerCase()===name.toLowerCase())){
+    alert("העובד כבר קיים ברשימה");
+    return;
+  }
+  try{
+    await adminRequest("add_employee",{name});
+    input.value="";
+    await refreshEmployeesEverywhere();
+    alert("העובד נוסף ✅");
+  }catch(e){ alert("לא ניתן להוסיף עובד: " + e.message); }
+}'''
+          s, n = add_pattern.subn(add_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch addEmployee')
+
+          del_emp_pattern = re.compile(r'async function deleteEmployeeByName\(name\)\{.*?\n\}', re.S)
+          del_emp_repl = r'''async function deleteEmployeeByName(name){
+  if(!confirm(`למחוק את ${name} מרשימת העובדים?\n\nההזמנות הישנות שלו לא יימחקו.`)) return;
+  try{
+    await adminRequest("delete_employee",{name});
+    if(currentEmployee===name){
+      currentEmployee="";
+      localStorage.removeItem("redball_employee");
+    }
+    await refreshEmployeesEverywhere();
+    alert("העובד הוסר מהרשימה ✅");
+  }catch(e){ alert("לא ניתן למחוק עובד: " + e.message); }
+}'''
+          s, n = del_emp_pattern.subn(del_emp_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch deleteEmployeeByName')
+
+          # Prevent duplicate attendance submissions while a save is in flight.
+          copy_pattern = re.compile(r'async function copyFullOrderAndSave\(\)\{.*?\n\}', re.S)
+          copy_repl = r'''async function copyFullOrderAndSave(){
+  if(orderSaveInProgress) return;
+  if(!currentEmployee){ alert("אין עובד מחובר"); return; }
+  if(!hasItems()){ alert("אין פריטים בהזמנה"); return; }
+
+  orderSaveInProgress=true;
+  const btn=document.getElementById("attendanceBtn");
+  if(btn){ btn.disabled=true; btn.innerText="שומר..."; }
+
+  try{
+    const text = buildFullOrderText();
+    const calc = calculateTotals();
+    const items = getCartItemsArray();
+
+    try{ await navigator.clipboard.writeText(text); }
+    catch(e){ console.warn("Clipboard failed", e); }
+
+    const { error } = await supabaseClient.from("orders").insert({
+      employee: currentEmployee,
+      items,
+      subtotal: calc.subtotal,
+      tip: calc.tip,
+      total: calc.total
+    });
+
+    if(error){
+      alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\n" + error.message);
+      return;
+    }
+
+    resetAll(true);
+    alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
+  } finally {
+    orderSaveInProgress=false;
+    if(btn){ btn.disabled=false; btn.innerText="העתק להתפקדות"; }
+  }
+}'''
+          s, n = copy_pattern.subn(copy_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch copyFullOrderAndSave')
+
+          # Secure login: password is verified only on the Edge Function.
+          login_pattern = re.compile(r'async function adminLogin\(\)\{.*?\n\}', re.S)
+          login_repl = r'''async function adminLogin(){
+  const pass=document.getElementById("adminPasswordInput").value;
+  if(!pass){ alert("הכנס סיסמה"); return; }
+  try{
+    const data=await adminRequest("login",{password:pass},false);
+    adminToken=data.token;
+    sessionStorage.setItem("redball_admin_token",adminToken);
+    document.getElementById("adminLoginView").classList.add("hidden");
+    document.getElementById("adminDashboard").classList.remove("hidden");
+    await refreshEmployeesEverywhere();
+    await loadOrders();
+  }catch(e){ alert(e.message || "סיסמה שגויה"); }
+}'''
+          s, n = login_pattern.subn(login_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch adminLogin')
+
+          # Secure order reads.
+          load_pattern = re.compile(r'async function loadOrders\(\)\{.*?\n\}', re.S)
+          load_repl = r'''async function loadOrders(){
+  try{
+    const data=await adminRequest("list_orders");
+    allOrders=data.orders || [];
+    applyFilters();
+  }catch(e){
+    alert("שגיאה בטעינת הזמנות: " + e.message);
+    openAdminLogin();
+  }
+}'''
+          s, n = load_pattern.subn(load_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch loadOrders')
+
+          # Secure order editing.
+          save_pattern = re.compile(r'async function saveEditedOrder\(\)\{.*?\n\}', re.S)
+          save_repl = r'''async function saveEditedOrder(){
+  const id=document.getElementById("editOrderId").value;
+  const employee=document.getElementById("editEmployee").value;
+  const subtotal=Number(document.getElementById("editSubtotal").value||0);
+  const tip=Number(document.getElementById("editTip").value||0);
+  const total=Number(document.getElementById("editTotal").value||0);
+  const itemsText=document.getElementById("editItemsText").value.trim();
+  const items=[{name:"עריכה ידנית", qty:1, note:itemsText}];
+  try{
+    await adminRequest("update_order",{id,patch:{employee,subtotal,tip,total,items}});
+    closeEditModal();
+    await loadOrders();
+    alert("ההזמנה עודכנה ✅");
+  }catch(e){ alert("שגיאה בשמירה: " + e.message); }
+}'''
+          s, n = save_pattern.subn(save_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch saveEditedOrder')
+
+          delete_pattern = re.compile(r'async function deleteOrder\(id\)\{.*?\n\}', re.S)
+          delete_repl = r'''async function deleteOrder(id){
+  if(!confirm("בטוח למחוק את ההזמנה?")) return;
+  try{
+    await adminRequest("delete_order",{id});
+    await loadOrders();
+    alert("ההזמנה נמחקה ✅");
+  }catch(e){ alert("שגיאה במחיקה: " + e.message); }
+}'''
+          s, n = delete_pattern.subn(delete_repl, s, count=1)
+          if n != 1: raise SystemExit('Could not patch deleteOrder')
+
+          # Password changes are handled server-side; no password is written to GitHub.
+          helper_marker = 'function backToPosOrLogin(){'
+          change_pw = r'''
+async function changeAdminPassword(){
+  const first=prompt("הכנס סיסמת מנהל חדשה (לפחות 6 תווים):");
+  if(first===null) return;
+  if(first.length<6){ alert("הסיסמה החדשה חייבת להכיל לפחות 6 תווים"); return; }
+  const second=prompt("הקלד שוב את הסיסמה החדשה:");
+  if(second===null) return;
+  if(first!==second){ alert("הסיסמאות אינן תואמות"); return; }
+  try{
+    await adminRequest("change_password",{newPassword:first});
+    alert("הסיסמה שונתה בהצלחה ✅");
+  }catch(e){ alert("שגיאה בשינוי הסיסמה: " + e.message); }
+}
+
+'''
+          if helper_marker not in s: raise SystemExit('Could not find password helper point')
+          s = s.replace(helper_marker, change_pw + helper_marker, 1)
 
           path.write_text(s, encoding='utf-8')
-          print('Red Ball UX improvements applied successfully.')
+          print('Red Ball security patch applied successfully.')
           PY
 
       - name: Commit updated index
@@ -163,5 +265,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Improve Red Ball category UX and safety prompts"
+          git commit -m "Secure admin access and prevent duplicate orders"
           git push
