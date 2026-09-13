@@ -205,6 +205,18 @@ button.main:hover,button.secondary:hover,.btn:hover{filter:brightness(1.15)}
   .categoryTabs{position:static;justify-content:flex-start;}
 }
 
+
+/* RED-BALL-UX-V2 */
+@media (min-width:901px) and (max-width:1450px){
+  .sections-wrapper,
+  .categoryTabs{
+    width:calc(100% - 290px);
+    max-width:1100px;
+    margin-left:auto;
+    margin-right:10px;
+  }
+}
+
 /* ADMIN */
 #adminScreen{min-height:100vh;background:rgba(0,0,0,.88);padding:18px;text-align:right;}
 .adminWrap{max-width:1200px;margin:auto;}
@@ -476,7 +488,7 @@ let currentEmployee=localStorage.getItem("redball_employee") || "";
 let allOrders=[];
 let filteredOrders=[];
 let menuBuilt=false;
-let activeMenuCategory="תפריט";
+let activeMenuCategory="הכל";
 
 /* =======================
    INIT
@@ -617,6 +629,7 @@ function loginEmployee(){
 }
 
 function switchEmployee(){
+  if(hasItems() && !confirm("יש הזמנה פעילה. לעבור עובד בכל זאת?")) return;
   localStorage.removeItem("redball_employee");
   currentEmployee="";
   showLogin();
@@ -629,11 +642,29 @@ function switchEmployee(){
 function renderCategoryTabs(){
   const tabs=document.getElementById("categoryTabs");
   if(!tabs) return;
-  const categories=["תפריט", ...Object.keys(menuData)];
+
+  const categoryIcons={
+    "משחקים":"🎱",
+    "מבצעים":"🔥",
+    "שתיה קלה":"🥤",
+    "אוכל":"🌭",
+    "שתיה חריפה":"🍸",
+    "צייסרים ובירות":"🍺",
+    "בקבוקים":"🍾"
+  };
+
+  const categories=[
+    {key:"הכל", label:"📋 הכל"},
+    ...Object.keys(menuData).map(key=>({
+      key,
+      label:`${categoryIcons[key] || "•"} ${key}`
+    }))
+  ];
+
   tabs.innerHTML=categories.map(category=>`
-    <button class="categoryTab ${category===activeMenuCategory ? "active" : ""}"
-            onclick="setMenuCategory('${escapeJs(category)}')">
-      ${category}
+    <button class="categoryTab ${category.key===activeMenuCategory ? "active" : ""}"
+            onclick="setMenuCategory('${escapeJs(category.key)}')">
+      ${category.label}
     </button>
   `).join("");
 }
@@ -664,7 +695,7 @@ function buildMenu(){
   const bottomSections=document.createElement("div");
 
   for(let category in menuData){
-    if(activeMenuCategory!=="תפריט" && category!==activeMenuCategory) continue;
+    if(activeMenuCategory!=="הכל" && category!==activeMenuCategory) continue;
 
     let section=document.createElement("div");
 
@@ -733,7 +764,7 @@ function buildMenu(){
       grid.appendChild(card);
     });
 
-    if(activeMenuCategory!=="תפריט"){
+    if(activeMenuCategory!=="הכל"){
     bottomSections.appendChild(section);
   }
   else if(category==="משחקים" || category==="מבצעים"){
@@ -819,7 +850,8 @@ function updateTotal(){
   updateOrderPanel(calc);
 }
 
-function resetAll(){
+function resetAll(skipConfirm=false){
+  if(!skipConfirm && hasItems() && !confirm("לאפס את ההזמנה הנוכחית?")) return false;
   for(let item in cart){
     cart[item]=0;
     const qtyEl=document.getElementById("qty_"+safeId(item));
@@ -830,6 +862,7 @@ function resetAll(){
   tipPercent=0;
   document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("tip-active"));
   updateTotal();
+  return true;
 }
 
 function getCartItemsArray(){
@@ -879,7 +912,7 @@ async function copyFullOrderAndSave(){
     alert("ההזמנה הועתקה, אבל המכירה לא נשמרה:\n" + error.message + "\n\nכנראה חסרה טבלת orders או הרשאות RLS ב-Supabase.");
     return;
   }
-  resetAll();
+  resetAll(true);
   alert("ההזמנה הועתקה להתפקדות, נשמרה במאגר ואופסה ✅");
 }
 
