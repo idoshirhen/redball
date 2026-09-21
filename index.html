@@ -404,12 +404,12 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
 
 <!-- ADMIN SCREEN -->
 <div id="adminScreen" class="hidden">
-  <div id="adminLoginView" class="adminLoginBox">
-    <h1>פאנל מנהלים</h1>
+  <div id="adminLoginView" class="adminLoginBox" style="position:fixed;inset:0;margin:auto;width:min(420px,92vw);height:max-content;z-index:50">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1 style="margin:0 0 12px">📊 פאנל מנהלים</h1><button type="button" class="secondary" style="padding:6px 10px" onclick="backToPosOrLogin()">✕</button></div>
     <p style="opacity:.8">הכנס סיסמת מנהל</p>
     <input id="adminPasswordInput" type="password" placeholder="סיסמה">
-    <button class="main" onclick="adminLogin()">כניסה</button>
-    <button class="secondary" onclick="backToPosOrLogin()">חזרה</button>
+    <button id="adminLoginBtn" class="main" type="button" onclick="adminLogin()">כניסה</button>
+    <p id="adminLoginMsg" style="font-size:12px;opacity:.75;min-height:18px"></p>
   </div>
 
   <div id="adminDashboard" class="adminWrap hidden">
@@ -583,6 +583,8 @@ let orderSaveInProgress=false;
 /* =======================
    INIT
 ======================= */
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!document.getElementById("adminLoginView").classList.contains("hidden")&&!document.getElementById("adminScreen").classList.contains("hidden"))adminLogin()});
+
 document.addEventListener("DOMContentLoaded", async () => {
   buildMenu();
   await loadEmployees();
@@ -1052,16 +1054,22 @@ function openAdminLogin(){
 
 async function adminLogin(){
   const pass=document.getElementById("adminPasswordInput").value;
-  if(!pass){ alert("הכנס סיסמה"); return; }
+  const msg=document.getElementById("adminLoginMsg");
+  const btn=document.getElementById("adminLoginBtn");
+  if(!pass){ msg.textContent="הכנס סיסמה"; return; }
+  msg.textContent="מתחבר...";
+  if(btn)btn.disabled=true;
   try{
     const data=await adminRequest("login",{password:pass},false);
     adminToken=data.token;
     sessionStorage.setItem("redball_admin_token",adminToken);
+    msg.textContent="";
     document.getElementById("adminLoginView").classList.add("hidden");
     document.getElementById("adminDashboard").classList.remove("hidden");
     await refreshEmployeesEverywhere();
     await loadOrders();
-  }catch(e){ alert(e.message || "סיסמה שגויה"); }
+  }catch(e){ msg.textContent="שגיאה: "+(e.message || "סיסמה שגויה"); }
+  finally{if(btn)btn.disabled=false;}
 }
 
 async function changeAdminPassword(){
