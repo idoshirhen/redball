@@ -1230,7 +1230,7 @@ async function loadWorkerBets(){
   box.innerHTML=rows.length?rows.map(b=>{
     const picks=(b.picks||[]).map(p=>escapeHtml((p.g||"")+" • "+(p.l||""))).join("<br>");
     let status=b.result_status==="won"?"🏆 זכה":b.result_status==="lost"?"❌ הפסיד":b.result_status==="cancelled"?"🚫 בוטל":b.payment_status==="paid"?"🟢 שולם / ההימור פעיל":"🟠 ממתין לתשלום";
-    let actions=b.payment_status==="pending"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'paid\')">🟢 שולם / הפעל</button>':b.payment_status==="paid"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'won\')">🏆 זכה</button> <button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'lost\')">❌ הפסיד</button> <button class="secondary" onclick="setWorkerBetStatus(\''+b.id+'\',\'cancelled\')">🚫 בוטל</button>':"";
+    let actions=b.payment_status==="pending"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'paid\')">🟢 שולם / הפעל</button> <button class="secondary" onclick="cancelWorkerBet(\''+b.id+'\')">🚫 בטל</button> <button class="danger" onclick="deletePendingBet(\''+b.id+'\')">🗑 מחק</button>':b.payment_status==="paid"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'won\')">🏆 זכה</button> <button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'lost\')">❌ הפסיד</button> <button class="secondary" onclick="cancelWorkerBet(\''+b.id+'\')">🚫 בוטל</button>':"";
     return '<div style="border:1px solid #333;border-radius:12px;padding:12px;margin:10px 0;background:#171717"><b>'+escapeHtml(b.bet_code)+' • '+escapeHtml(b.player_name)+'</b><div style="margin:7px 0">'+picks+'</div><div>סכום: <b>'+Number(b.stake).toLocaleString("he-IL")+'</b> | יחס: '+Number(b.total_odd).toFixed(2)+' | זכייה: '+Number(b.potential_win).toLocaleString("he-IL")+'</div><div style="margin:8px 0">'+status+(b.paid_by?' • נלקח ע"י '+escapeHtml(b.paid_by):'')+'</div>'+actions+'</div>'
   }).join(""):'אין כרגע הימורים';
 }
@@ -1239,6 +1239,16 @@ function closeWorkerBets(){document.getElementById("workerBetsModal").style.disp
 async function setWorkerBetStatus(id,status){
   if(!currentEmployee)return;
   const {error}=await supabaseClient.rpc("worker_update_bet_status",{p_bet_id:id,p_employee:currentEmployee,p_status:status});
+  if(error)return alert(error.message);
+  await loadWorkerBets();
+}
+async function cancelWorkerBet(id){
+  if(!confirm("לבטל את ההימור? אם הוא כבר אושר, המכירה והעמלה ירדו מהעובד."))return;
+  await setWorkerBetStatus(id,"cancelled");
+}
+async function deletePendingBet(id){
+  if(!confirm("למחוק את ההימור שממתין לתשלום? הפעולה אינה ניתנת לביטול."))return;
+  const {error}=await supabaseClient.rpc("worker_delete_pending_bet",{p_bet_id:id,p_employee:currentEmployee});
   if(error)return alert(error.message);
   await loadWorkerBets();
 }
