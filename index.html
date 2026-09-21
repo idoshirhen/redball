@@ -6,7 +6,33 @@
 <title>Red Ball🎱GameZone</title>
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+async function loadWorkerBets(){
+  if(!currentEmployee)return;
+  const {data,error}=await supabaseClient.rpc("worker_list_bets",{p_employee:currentEmployee});
+  const box=document.getElementById("workerBetsList"),count=document.getElementById("betsCount");
+  if(error){if(box)box.textContent="שגיאה בטעינת ההימורים: "+error.message;return}
+  const rows=data||[],pending=rows.filter(b=>b.payment_status==="pending"&&b.result_status==="pending").length;
+  if(count)count.textContent=pending?"("+pending+")":"";
+  if(!box)return;
+  box.innerHTML=rows.length?rows.map(b=>{
+    const picks=(b.picks||[]).map(p=>escapeHtml((p.g||"")+" • "+(p.l||""))).join("<br>");
+    let status=b.result_status==="won"?"🏆 זכה":b.result_status==="lost"?"❌ הפסיד":b.result_status==="cancelled"?"🚫 בוטל":b.payment_status==="paid"?"🟢 שולם / ההימור פעיל":"🟠 ממתין לתשלום";
+    let actions=b.payment_status==="pending"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'paid\')">🟢 שולם / הפעל</button>':b.payment_status==="paid"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'won\')">🏆 זכה</button> <button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'lost\')">❌ הפסיד</button> <button class="secondary" onclick="setWorkerBetStatus(\''+b.id+'\',\'cancelled\')">🚫 בוטל</button>':"";
+    return '<div style="border:1px solid #333;border-radius:12px;padding:12px;margin:10px 0;background:#171717"><b>'+escapeHtml(b.bet_code)+' • '+escapeHtml(b.player_name)+'</b><div style="margin:7px 0">'+picks+'</div><div>סכום: <b>'+Number(b.stake).toLocaleString("he-IL")+'</b> | יחס: '+Number(b.total_odd).toFixed(2)+' | זכייה: '+Number(b.potential_win).toLocaleString("he-IL")+'</div><div style="margin:8px 0">'+status+(b.paid_by?' • נלקח ע"י '+escapeHtml(b.paid_by):'')+'</div>'+actions+'</div>'
+  }).join(""):'אין כרגע הימורים';
+}
+async function openWorkerBets(){document.getElementById("workerBetsModal").style.display="block";await loadWorkerBets()}
+function closeWorkerBets(){document.getElementById("workerBetsModal").style.display="none"}
+async function setWorkerBetStatus(id,status){
+  if(!currentEmployee)return;
+  const {error}=await supabaseClient.rpc("worker_update_bet_status",{p_bet_id:id,p_employee:currentEmployee,p_status:status});
+  if(error)return alert(error.message);
+  await loadWorkerBets();
+}
+setInterval(()=>{if(currentEmployee)loadWorkerBets()},30000);
+
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -355,12 +381,18 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
       <button class="secondary" onclick="switchEmployee()">🔄 החלף עובד</button>
       <button class="secondary" onclick="openAdminLogin()">📊 פאנל מנהלים</button>
       <button class="secondary" onclick="window.open('betting.html','_blank','noopener')">🎲 הימורים</button>
+      <button class="secondary" onclick="openWorkerBets()">📥 הימורים שנשלחו <span id="betsCount"></span></button>
     </div>
   </div>
 
   <h1>🎳🎱 Red Ball 🎱🎳</h1>
 
   <div id="categoryTabs" class="categoryTabs" aria-label="קטגוריות"></div>
+
+  <div id="workerBetsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;padding:25px;overflow:auto">
+<div style="max-width:850px;margin:30px auto;background:#101010;border:1px solid #444;border-radius:16px;padding:18px;box-shadow:0 0 35px rgba(110,216,255,.2)">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2>📥 הימורים שנשלחו</h2><button class="secondary" onclick="closeWorkerBets()">✕</button></div>
+<div id="workerBetsList">טוען...</div></div></div>
 
   <div id="orderPanel">
     <h3>הזמנה</h3>
