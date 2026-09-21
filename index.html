@@ -1134,9 +1134,11 @@ function applyFilters(){
   renderAdmin();
 }
 
+function isBetOrder(o){return Array.isArray(o.items)&&o.items.some(i=>String(i?.name||"").startsWith("הימור RB-"))}
+function orderCommission(o){return Number(o.total||0)*(isBetOrder(o)?0.05:0.25)}
 function renderAdmin(){
   const total=filteredOrders.reduce((s,o)=>s+Number(o.total||0),0);
-  const salary=total*0.25;
+  const salary=filteredOrders.reduce((s,o)=>s+orderCommission(o),0);
   const count=filteredOrders.length;
   const avg=count ? total/count : 0;
   document.getElementById("statTotal").innerText=formatMoney(total);
@@ -1146,12 +1148,13 @@ function renderAdmin(){
 
   const byEmp={};
   filteredOrders.forEach(o=>{
-    if(!byEmp[o.employee]) byEmp[o.employee]={count:0,total:0};
+    if(!byEmp[o.employee]) byEmp[o.employee]={count:0,total:0,commission:0};
     byEmp[o.employee].count++;
     byEmp[o.employee].total += Number(o.total||0);
+    byEmp[o.employee].commission += orderCommission(o);
   });
   document.getElementById("employeeSummaryBody").innerHTML = Object.keys(byEmp).map(emp=>`
-    <tr><td>${escapeHtml(emp)}</td><td>${byEmp[emp].count}</td><td>${formatMoney(byEmp[emp].total)}</td><td>${formatMoney(byEmp[emp].total*0.25)}</td></tr>
+    <tr><td>${escapeHtml(emp)}</td><td>${byEmp[emp].count}</td><td>${formatMoney(byEmp[emp].total)}</td><td>${formatMoney(byEmp[emp].commission)}</td></tr>
   `).join("") || `<tr><td colspan="4">אין נתונים</td></tr>`;
 
   document.getElementById("ordersTableBody").innerHTML = filteredOrders.map(o=>`
@@ -1162,7 +1165,7 @@ function renderAdmin(){
       <td>${formatMoney(o.subtotal||0)}</td>
       <td>${formatMoney(o.tip||0)}</td>
       <td>${formatMoney(o.total||0)}</td>
-      <td>${formatMoney(Number(o.total||0)*0.25)}</td>
+      <td>${formatMoney(orderCommission(o))}</td>
       <td>
         <button class="secondary" onclick="openEditModal('${o.id}')">ערוך</button>
         <button class="danger" onclick="deleteOrder('${o.id}')">מחק</button>
@@ -1232,7 +1235,7 @@ async function loadWorkerBets(){
   const {data,error}=await supabaseClient.rpc("worker_list_bets",{p_employee:currentEmployee});
   const box=document.getElementById("workerBetsList"),count=document.getElementById("betsCount");
   if(error){if(box)box.textContent="שגיאה בטעינת ההימורים: "+error.message;return}
-  const rows=data||[],pending=rows.filter(b=>b.payment_status==="pending"&&b.result_status==="pending").length;
+  const rows=(data||[]).filter(b=>b.result_status!=="cancelled"),pending=rows.filter(b=>b.payment_status==="pending"&&b.result_status==="pending").length;
   if(count)count.textContent=pending?"("+pending+")":"";
   if(!box)return;
   box.innerHTML=rows.length?rows.map(b=>{
