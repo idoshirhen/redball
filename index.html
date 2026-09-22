@@ -367,7 +367,11 @@ th{background:#161616;color:#6ed8ff;position:sticky;top:0;}
   <div id="workerBetsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;padding:25px;overflow:auto">
 <div style="max-width:850px;margin:30px auto;background:#101010;border:1px solid #444;border-radius:16px;padding:18px;box-shadow:0 0 35px rgba(110,216,255,.2)">
 <div style="display:flex;justify-content:space-between;align-items:center"><h2>📥 הימורים שנשלחו</h2><button class="secondary" onclick="closeWorkerBets()">✕</button></div>
-<div id="workerBetsList">טוען...</div></div></div>
+<div style="display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap">
+<button id="betTabPending" class="main" onclick="setWorkerBetTab('pending')">🟠 ממתינים לתשלום</button>
+<button id="betTabActive" class="secondary" onclick="setWorkerBetTab('active')">🟢 פעילים</button>
+<button id="betTabDone" class="secondary" onclick="setWorkerBetTab('done')">🏁 הסתיימו</button>
+</div><div id="workerBetsList">טוען...</div></div></div>
 
   <div id="orderPanel">
     <h3>הזמנה</h3>
@@ -1230,20 +1234,14 @@ function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate
 function endOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999); }
 function startOfWeekSunday(d){ const x=startOfDay(d); x.setDate(x.getDate()-x.getDay()); return x; }
 
-async function loadWorkerBets(){
-  if(!currentEmployee)return;
-  const {data,error}=await supabaseClient.rpc("worker_list_bets",{p_employee:currentEmployee});
-  const box=document.getElementById("workerBetsList"),count=document.getElementById("betsCount");
-  if(error){if(box)box.textContent="שגיאה בטעינת ההימורים: "+error.message;return}
+let workerBetTab="pending",workerBetsCache=[];
+function setWorkerBetTab(tab){workerBetTab=tab;["pending","active","done"].forEach(t=>{const el=document.getElementById("betTab"+(t==="pending"?"Pending":t==="active"?"Active":"Done"));if(el)el.className=t===tab?"main":"secondary"});renderWorkerBets()}
+function renderWorkerBets(){
+  const box=document.getElementById("workerBetsList");if(!box)return;
   const rows=(data||[]).filter(b=>b.result_status!=="cancelled"),pending=rows.filter(b=>b.payment_status==="pending"&&b.result_status==="pending").length;
+  workerBetsCache=rows;
   if(count)count.textContent=pending?"("+pending+")":"";
-  if(!box)return;
-  box.innerHTML=rows.length?rows.map(b=>{
-    const picks=(b.picks||[]).map(p=>escapeHtml((p.g||"")+" • "+(p.l||""))).join("<br>");
-    let status=b.result_status==="won"?"🏆 זכה":b.result_status==="lost"?"❌ הפסיד":b.result_status==="cancelled"?"🚫 בוטל":b.payment_status==="paid"?"🟢 שולם / ההימור פעיל":"🟠 ממתין לתשלום";
-    let actions=b.payment_status==="pending"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'paid\')">🟢 שולם / הפעל</button> <button class="secondary" onclick="cancelWorkerBet(\''+b.id+'\')">🚫 בטל</button> <button class="danger" onclick="deletePendingBet(\''+b.id+'\')">🗑 מחק</button>':b.payment_status==="paid"&&b.result_status==="pending"?'<button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'won\')">🏆 זכה</button> <button class="main" onclick="setWorkerBetStatus(\''+b.id+'\',\'lost\')">❌ הפסיד</button> <button class="secondary" onclick="cancelWorkerBet(\''+b.id+'\')">🚫 בוטל</button>':"";
-    return '<div style="border:1px solid #333;border-radius:12px;padding:12px;margin:10px 0;background:#171717"><b>'+escapeHtml(b.bet_code)+' • '+escapeHtml(b.player_name)+'</b><div style="margin:7px 0">'+picks+'</div><div>סכום: <b>'+Number(b.stake).toLocaleString("he-IL")+'</b> | יחס: '+Number(b.total_odd).toFixed(2)+' | זכייה: '+Number(b.potential_win).toLocaleString("he-IL")+'</div><div style="margin:8px 0">'+status+(b.paid_by?' • נלקח ע"י '+escapeHtml(b.paid_by):'')+'</div>'+actions+'</div>'
-  }).join(""):'אין כרגע הימורים';
+  renderWorkerBets();
 }
 async function openWorkerBets(){document.getElementById("workerBetsModal").style.display="block";await loadWorkerBets()}
 function closeWorkerBets(){document.getElementById("workerBetsModal").style.display="none"}
