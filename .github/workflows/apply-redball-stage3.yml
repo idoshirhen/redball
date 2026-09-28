@@ -1,0 +1,33 @@
+name: Apply Red Ball Stage 3 Security
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-redball-stage3.yml'
+      - '.github/scripts/patch_redball_stage3.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply stage 3 hardening
+        run: python .github/scripts/patch_redball_stage3.py
+
+      - name: Commit hardened HTML
+        run: |
+          if git diff --quiet -- index.html betting.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html betting.html
+          git commit -m "Harden public site access and browser security"
+          git push
