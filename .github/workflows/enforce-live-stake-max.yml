@@ -1,0 +1,33 @@
+name: Enforce Live Stake Max
+on:
+  push:
+    paths:
+      - '.github/scripts/patch_stake_live_max.py'
+      - '.github/workflows/enforce-live-stake-max.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply live max stake enforcement
+        run: python .github/scripts/patch_stake_live_max.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          s=Path('betting.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
+          js='\n'.join(x for x in scripts if x.strip())
+          Path('/tmp/betting-inline.js').write_text(js,encoding='utf-8')
+          PY
+          node --check /tmp/betting-inline.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add betting.html
+          git diff --cached --quiet || git commit -m 'Enforce 100000 max stake while typing'
+          git push
