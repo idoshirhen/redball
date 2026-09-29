@@ -14,10 +14,10 @@ def replace_once(old,new,label):
 
 def replace_func(name,new):
     global s
-    marker='function '+name+'('
+    marker='async function '+name+'('
     start=s.find(marker)
     if start<0:
-        marker='async function '+name+'('
+        marker='function '+name+'('
         start=s.find(marker)
     if start<0: raise SystemExit('missing function '+name)
     brace=s.find('{',start)
