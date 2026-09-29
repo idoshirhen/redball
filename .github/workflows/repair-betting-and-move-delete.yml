@@ -1,0 +1,49 @@
+name: Repair Betting and Move Delete
+
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-betting-and-move-delete.yml'
+      - '.github/scripts/repair_betting_and_move_delete.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Repair betting and move delete
+        run: python .github/scripts/repair_betting_and_move_delete.py
+
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          blocks=[]
+          for m in re.finditer(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I):
+              open_tag=s[m.start():s.find('>',m.start())+1]
+              if ' src=' not in open_tag.lower():
+                  blocks.append(m.group(1))
+          Path('/tmp/betting-inline.js').write_text('\n'.join(blocks),encoding='utf-8')
+          PY
+          node --check /tmp/betting-inline.js
+
+      - name: Commit repair
+        run: |
+          if git diff --quiet -- betting.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git commit -m "Repair betting JavaScript and move delete beside status"
+          git push
