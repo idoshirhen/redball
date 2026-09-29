@@ -1,0 +1,34 @@
+name: Add Admin Pick Outcomes
+on:
+  push:
+    paths:
+      - '.github/scripts/add_admin_pick_outcomes.py'
+      - '.github/workflows/add-admin-pick-outcomes.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add outcome icons to admin bets
+        run: python .github/scripts/add_admin_pick_outcomes.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          m=re.search(r'<script>([\s\S]*)</script>\s*</body>',s)
+          if not m: raise SystemExit('script block not found')
+          Path('/tmp/betting.js').write_text(m.group(1),encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Show pick outcome icons in admin bets"
+          git push
