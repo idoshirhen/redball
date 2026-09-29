@@ -1,0 +1,39 @@
+name: Apply Red Ball Stage 4 Security Dashboard
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-redball-stage4.yml'
+      - '.github/scripts/patch_redball_stage4.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply stage 4 security dashboard
+        run: python .github/scripts/patch_redball_stage4.py
+
+      - name: Sanity checks
+        run: |
+          grep -q "RED-BALL-STAGE4-SECURITY-DASHBOARD" index.html
+          grep -q "redball-security" index.html
+          grep -q "מרכז אבטחה" index.html
+
+      - name: Commit updated index
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add security monitoring dashboard"
+          git push
