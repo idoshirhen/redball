@@ -1,0 +1,33 @@
+name: Apply RedBall Modals and Bet Controls
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-redball-modals-and-bet-controls.yml'
+      - '.github/scripts/patch_redball_modals_and_bet_controls.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply modal and betting controls patch
+        run: python .github/scripts/patch_redball_modals_and_bet_controls.py
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- betting.html index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html index.html
+          git commit -m "Use site modals and reversible betting controls"
+          git push
