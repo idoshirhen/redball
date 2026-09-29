@@ -1,0 +1,45 @@
+name: Apply Betting Controls V2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-betting-controls-v2.yml'
+      - '.github/scripts/patch_betting_controls_v2.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply betting controls v2
+        run: python .github/scripts/patch_betting_controls_v2.py
+
+      - name: Validate native popups remain removed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for f in ['index.html','betting.html']:
+              s=Path(f).read_text(encoding='utf-8')
+              for token in ['alert(', 'confirm(', 'prompt(']:
+                  if token in s:
+                      raise SystemExit(f'{f}: native popup remains: {token}')
+          print('Popup validation passed')
+          PY
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- betting.html index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html index.html
+          git commit -m "Refine betting status controls and sent-bet deletion"
+          git push
