@@ -1,0 +1,37 @@
+name: Optimize My Bets And Add Archive
+on:
+  push:
+    paths:
+      - '.github/scripts/optimize_mybets_add_archive.py'
+      - '.github/workflows/optimize-mybets-add-archive.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply My Bets optimization and archive
+        run: python .github/scripts/optimize_mybets_add_archive.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/betting-inline.js').write_text('\n'.join(blocks),encoding='utf-8')
+          PY
+          node --check /tmp/betting-inline.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add betting.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Speed up My Bets and add betting archive'
+            git push
+          fi
