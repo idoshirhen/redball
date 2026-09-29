@@ -1,0 +1,32 @@
+name: Keep Admin Game Order On Result V2
+on:
+  push:
+    paths:
+      - '.github/scripts/keep_admin_game_order_on_result_v2.py'
+      - '.github/workflows/keep-admin-game-order-on-result-v2.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keep order stable after result changes
+        run: python .github/scripts/keep_admin_game_order_on_result_v2.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('betting.html').read_text(encoding='utf-8')
+          a=s.rfind('<script>')+len('<script>')
+          b=s.rfind('</script>')
+          Path('/tmp/betting.js').write_text(s[a:b],encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git diff --cached --quiet || git commit -m "Keep existing games order stable"
+          git push
