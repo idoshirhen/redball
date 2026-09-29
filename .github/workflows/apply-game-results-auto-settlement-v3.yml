@@ -1,0 +1,41 @@
+name: Apply Game Results Auto Settlement V3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/add_game_results_auto_settlement_v3.py'
+      - '.github/workflows/apply-game-results-auto-settlement-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply game result UI v3
+        run: python .github/scripts/add_game_results_auto_settlement_v3.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('betting.html').read_text(encoding='utf-8')
+          start=s.find('<script>')
+          end=s.rfind('</script>')
+          Path('/tmp/betting.js').write_text(s[start+8:end],encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- betting.html; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git commit -m "Add game results and automatic bet settlement"
+          git push
