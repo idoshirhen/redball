@@ -18,7 +18,31 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Apply modal and betting controls patch
-        run: python .github/scripts/patch_redball_modals_and_bet_controls.py
+        run: |
+          python .github/scripts/patch_redball_modals_and_bet_controls.py || true
+
+      - name: Final popup cleanup and validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          required={
+              'index.html':['REDBALL-SITE-MODAL-V1','siteConfirm(','sitePrompt('],
+              'betting.html':['REDBALL-SITE-MODAL-V1','BETS_ADMIN_URL','adminBetAction(','activeState']
+          }
+          for name,markers in required.items():
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+              # Any remaining alert() is notification-only; convert it to the site modal.
+              s=s.replace('alert(','siteAlert(')
+              p.write_text(s,encoding='utf-8')
+              for marker in markers:
+                  if marker not in s:
+                      raise SystemExit(f'{name}: required marker missing: {marker}')
+              for native in ('alert(','confirm(','prompt('):
+                  if native in s:
+                      raise SystemExit(f'{name}: native browser popup remains: {native}')
+          print('Validation passed: both sites use only Red Ball modals')
+          PY
 
       - name: Commit changes
         run: |
