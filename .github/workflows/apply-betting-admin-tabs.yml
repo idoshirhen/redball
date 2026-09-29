@@ -1,0 +1,33 @@
+name: Apply Betting Admin Tabs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-betting-admin-tabs.yml'
+      - '.github/scripts/patch_betting_admin_tabs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply betting admin tabs
+        run: python .github/scripts/patch_betting_admin_tabs.py
+
+      - name: Commit betting admin tabs
+        run: |
+          if git diff --quiet -- betting.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git commit -m "Add betting admin tabs"
+          git push
