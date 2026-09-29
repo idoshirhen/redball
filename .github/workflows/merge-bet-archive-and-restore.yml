@@ -1,0 +1,34 @@
+name: Merge Betting Archive And Restore
+on:
+  push:
+    paths:
+      - '.github/scripts/merge_bet_archive_and_restore.py'
+      - '.github/workflows/merge-bet-archive-and-restore.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply unified betting management
+        run: python .github/scripts/merge_bet_archive_and_restore.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          m=re.search(r'<script>([\s\S]*)</script>\s*</body>',s)
+          if not m: raise SystemExit('script block not found')
+          Path('/tmp/betting.js').write_text(m.group(1),encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add betting.html
+          git diff --cached --quiet || git commit -m "Unify bet archive, restore tickets and global lookup"
+          git push
