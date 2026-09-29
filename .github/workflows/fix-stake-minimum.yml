@@ -1,0 +1,34 @@
+name: Fix Stake Minimum
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-stake-minimum.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply minimum stake fix
+        run: python .github/scripts/fix_stake_minimum.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/betting.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add betting.html
+          git diff --cached --quiet || git commit -m "Enforce 10000 minimum stake on blur"
+          git push
