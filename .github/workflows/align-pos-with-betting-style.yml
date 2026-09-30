@@ -1,0 +1,48 @@
+name: Align POS With Betting Style
+
+on:
+  push:
+    paths:
+      - '.github/scripts/align_pos_with_betting_style.py'
+      - '.github/workflows/align-pos-with-betting-style.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply patch
+        run: python .github/scripts/align_pos_with_betting_style.py
+      - name: Check inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',s,re.S|re.I)
+          for i,code in enumerate(scripts):
+              Path(f'/tmp/index-inline-{i}.js').write_text(code,encoding='utf-8')
+          print(len(scripts))
+          PY
+          for f in /tmp/index-inline-*.js; do node --check "$f"; done
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index.html changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Align POS design with betting site and add combo deal'
+          git push
