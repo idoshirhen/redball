@@ -11,7 +11,7 @@ if old_heading not in s:
 s = s.replace(old_heading, new_heading, 1)
 
 # 2) Put the food+drink combo first in the Promotions list.
-old_promos = '"מבצעים":[{name:"מבצע שתיה קלה (10)",price:1000},{name:"מבצע נקניקיה (10)",price:1000},{name:"נרגילה טבק+גחל",price:1800},{name:"מבצע אוכל+שתיה (10+10)",price:2000}]'
+old_promos = '"מבצעים":[{name:"מבצע שתיה קלה (10)",price:1000},{name:"מבצע נקניקיה (10)",price:1000},{name:"מבצע אוכל+שתיה (10+10)",price:2000},{name:"נרגילה טבק+גחל",price:1800}]'
 new_promos = '"מבצעים":[{name:"מבצע אוכל+שתיה (10+10)",price:2000},{name:"מבצע שתיה קלה (10)",price:1000},{name:"מבצע נקניקיה (10)",price:1000},{name:"נרגילה טבק+גחל",price:1800}]'
 if old_promos not in s:
     raise SystemExit('Promotions anchor not found')
