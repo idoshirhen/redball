@@ -1,0 +1,38 @@
+name: Upgrade Admin Bets Dashboard
+on:
+  push:
+    paths:
+      - '.github/scripts/upgrade_admin_bets_dashboard.py'
+      - '.github/workflows/upgrade-admin-bets-dashboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply admin bets dashboard upgrade
+        run: python .github/scripts/upgrade_admin_bets_dashboard.py
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('betting.html').read_text(encoding='utf-8')
+          m=re.search(r'<script>([\s\S]*)</script>\s*</body>',s)
+          if not m: raise SystemExit('script block not found')
+          Path('/tmp/betting.js').write_text(m.group(1),encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- betting.html; then
+            echo 'No betting.html changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add betting.html
+          git commit -m 'Upgrade admin bets dashboard'
+          git push
