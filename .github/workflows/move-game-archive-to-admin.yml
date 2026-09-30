@@ -1,0 +1,43 @@
+name: Move Game Archive To Admin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/move_game_archive_to_admin.py'
+      - '.github/workflows/move-game-archive-to-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply archive move patch
+        run: python .github/scripts/move_game_archive_to_admin.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('betting.html').read_text(encoding='utf-8')
+          start=s.rfind('<script>')
+          end=s.rfind('</script>')
+          if start<0 or end<0 or end<=start:
+              raise SystemExit('script block not found')
+          Path('/tmp/betting.js').write_text(s[start+8:end],encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
+      - name: Commit betting.html
+        run: |
+          if git diff --quiet -- betting.html; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add betting.html
+          git commit -m 'Move game archive into betting admin'
+          git push
