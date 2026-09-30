@@ -1,0 +1,1 @@
+Force GitHub Pages redeploy after startup failure on 2026-09-30.
