@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RedBall | תצוגה מקדימה - משחקים לפי סשן</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#fff;font-family:Rubik,Arial,sans-serif;min-height:100vh}button,input{font:inherit}.wrap{max-width:980px;margin:auto;padding:22px}.previewNote{background:#0c1d22;border:1px solid #24515f;color:#bcecff;padding:12px 14px;border-radius:12px;margin-bottom:16px}.panel{background:#111;border:1px solid #333;border-radius:15px;padding:14px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.head h1{font-size:24px;margin:0}.muted{color:#999;font-size:13px}.session{margin-top:12px;border:1px solid #333;border-radius:13px;overflow:hidden;background:#151515}.sessionHead{width:100%;border:0;background:linear-gradient(180deg,#1d1d1d,#151515);color:#fff;padding:14px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;text-align:right}.sessionHead:hover{background:#202020}.sessionTitle{display:flex;align-items:center;gap:10px;font-weight:800}.arrow{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #444;border-radius:8px;transition:.18s}.session.open .arrow{transform:rotate(180deg)}.sessionMeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pill{font-size:11px;padding:5px 8px;border-radius:999px;border:1px solid #444;color:#bbb}.pill.open{color:#62e6a7;border-color:rgba(98,230,167,.35);background:rgba(98,230,167,.08)}.pill.locked{color:#aaa}.games{display:none;padding:12px;border-top:1px solid #2d2d2d}.session.open .games{display:block}.game{background:#101010;border:1px solid #303030;border-radius:11px;padding:12px;margin-bottom:10px}.game:last-child{margin-bottom:0}.gameTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}.gameTitle{font-weight:800;font-size:16px}.date{color:#888;font-size:12px;margin-top:3px}.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.odd{background:#181818;border:1px solid #3d3d3d;border-radius:9px;padding:8px;text-align:center}.odd span{display:block;color:#8f8f8f;font-size:11px}.odd b{color:#6ed8ff}.resultRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #2b2b2b}.resultLabel{font-size:12px;color:#aaa}.resultBtn{background:#191919;border:1px solid #444;color:#fff;border-radius:8px;padding:6px 12px}.resultBtn.selected{background:#087a4f;border-color:#14b875}.actions{display:flex;gap:7px;margin-right:auto}.ghost{background:#191919;border:1px solid #444;color:#fff;border-radius:8px;padding:6px 10px}.danger{background:#54191f;border-color:#8c2c36}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.toolbar button{background:#191919;color:#fff;border:1px solid #444;border-radius:9px;padding:8px 12px;cursor:pointer}@media(max-width:700px){.wrap{padding:12px}.odds{grid-template-columns:1fr}.gameTop{display:block}.sessionHead{align-items:flex-start}.sessionMeta{justify-content:flex-start}.actions{margin-right:0;width:100%}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="previewNote">👀 זו תצוגה מקדימה בלבד. שום כפתור כאן לא משנה את אתר ההימורים או את מסד הנתונים.</div>
+  <section class="panel">
+    <div class="head"><div><h1>משחקים קיימים</h1><div class="muted">הצעה לקיבוץ המשחקים לפי סשנים מתקפלים</div></div></div>
+    <div class="toolbar"><button id="openAll">פתח הכל</button><button id="closeAll">סגור הכל</button></div>
+
+    <div class="session open">
+      <button class="sessionHead" type="button">
+        <div class="sessionTitle"><span class="arrow">⌄</span><span>מחזור 2</span></div>
+        <div class="sessionMeta"><span class="pill open">פתוח</span><span class="pill">9 משחקים</span></div>
+      </button>
+      <div class="games">
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">לאנס - ספורטינג ליסבון</div><div class="date">13/10/2026 • 19:45</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.60</b></div><div class="odd"><span>X</span><b>1.70</b></div><div class="odd"><span>2</span><b>1.45</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn" type="button">1</button><button class="resultBtn selected" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">סבאח - סלביה פראג</div><div class="date">13/10/2026 • 19:45</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.95</b></div><div class="odd"><span>X</span><b>1.70</b></div><div class="odd"><span>2</span><b>1.25</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn selected" type="button">1</button><button class="resultBtn" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">ארסנל - ליל</div><div class="date">13/10/2026 • 22:00</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.20</b></div><div class="odd"><span>X</span><b>1.80</b></div><div class="odd"><span>2</span><b>2.00</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn" type="button">1</button><button class="resultBtn" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+      </div>
+    </div>
+
+    <div class="session">
+      <button class="sessionHead" type="button">
+        <div class="sessionTitle"><span class="arrow">⌄</span><span>מחזור 3</span></div>
+        <div class="sessionMeta"><span class="pill locked">נעול</span><span class="pill">18 משחקים</span></div>
+      </button>
+      <div class="games">
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">פריז סן ז'רמן - ברצלונה</div><div class="date">20/10/2026 • 22:00</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.50</b></div><div class="odd"><span>X</span><b>1.65</b></div><div class="odd"><span>2</span><b>1.60</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn" type="button">1</button><button class="resultBtn" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">באיירן מינכן - ארסנל</div><div class="date">21/10/2026 • 22:00</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.45</b></div><div class="odd"><span>X</span><b>1.70</b></div><div class="odd"><span>2</span><b>1.65</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn" type="button">1</button><button class="resultBtn" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+      </div>
+    </div>
+
+    <div class="session">
+      <button class="sessionHead" type="button">
+        <div class="sessionTitle"><span class="arrow">⌄</span><span>מחזור 4</span></div>
+        <div class="sessionMeta"><span class="pill locked">נעול</span><span class="pill">18 משחקים</span></div>
+      </button>
+      <div class="games">
+        <div class="game"><div class="gameTop"><div><div class="gameTitle">ברצלונה - אסטון וילה</div><div class="date">03/11/2026 • 22:00</div></div></div><div class="odds"><div class="odd"><span>1</span><b>1.25</b></div><div class="odd"><span>X</span><b>1.80</b></div><div class="odd"><span>2</span><b>1.85</b></div></div><div class="resultRow"><span class="resultLabel">תוצאה:</span><button class="resultBtn" type="button">1</button><button class="resultBtn" type="button">X</button><button class="resultBtn" type="button">2</button><div class="actions"><button class="ghost" type="button">שמור יחסים</button><button class="ghost danger" type="button">מחק</button></div></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('.sessionHead').forEach(btn=>btn.addEventListener('click',()=>btn.closest('.session').classList.toggle('open')));
+document.querySelectorAll('.resultBtn').forEach(btn=>btn.addEventListener('click',()=>{const row=btn.closest('.resultRow');row.querySelectorAll('.resultBtn').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected')}));
+document.getElementById('openAll').onclick=()=>document.querySelectorAll('.session').forEach(x=>x.classList.add('open'));
+document.getElementById('closeAll').onclick=()=>document.querySelectorAll('.session').forEach(x=>x.classList.remove('open'));
+</script>
+</body>
+</html>
