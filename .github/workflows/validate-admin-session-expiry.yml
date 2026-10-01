@@ -1,0 +1,30 @@
+name: Validate Admin Session Expiry Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'betting.html'
+      - '.github/workflows/validate-admin-session-expiry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate betting JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('betting.html').read_text(encoding='utf-8')
+          start=s.rfind('<script>')
+          end=s.rfind('</script>')
+          if start<0 or end<0 or end<=start:
+              raise SystemExit('script block not found')
+          Path('/tmp/betting.js').write_text(s[start+8:end],encoding='utf-8')
+          PY
+          node --check /tmp/betting.js
