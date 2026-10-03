@@ -1,0 +1,35 @@
+name: Validate RedBall HTML JavaScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'betting.html'
+      - 'index.html'
+      - '.github/workflows/validate-redball-html-js.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract and validate inline JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for name in ('betting.html','index.html'):
+              s=Path(name).read_text(encoding='utf-8')
+              blocks=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',s,re.I)
+              inline=[b for b in blocks if b.strip()]
+              if not inline:
+                  raise SystemExit(f'No inline script in {name}')
+              out='\n'.join(inline)
+              Path('/tmp/'+name+'.js').write_text(out,encoding='utf-8')
+          PY
+          node --check /tmp/betting.html.js
+          node --check /tmp/index.html.js
