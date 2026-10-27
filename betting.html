@@ -60,24 +60,32 @@ async function pullResultsNow(btn){
   const buttons=[$("#pullResultsNowHealth"),$("#pullResultsNowGames")].filter(Boolean),original=buttons.map(b=>b.textContent);
   buttons.forEach(b=>{b.disabled=true;b.textContent="⏳ מושך תוצאות..."});
   try{
-    const before=allGames.filter(g=>g.result!=null).length;
-    const headers={"apikey":KEY,"Content-Type":"application/json"};
-    const mainRes=await fetch(SB_URL+"/functions/v1/redball-football-sync-preview",{method:"GET",headers});
-    let main={};try{main=await mainRes.json()}catch(e){}
-    if(!mainRes.ok)throw new Error(main.error||"הסנכרון הראשי נכשל");
-    const wdRes=await fetch(SB_URL+"/functions/v1/redball-results-watchdog",{method:"GET",headers});
-    let wd={};try{wd=await wdRes.json()}catch(e){}
-    if(!wdRes.ok)throw new Error(wd.error||"ה-Watchdog נכשל");
     await load();
-    const after=allGames.filter(g=>g.result!=null).length,updated=Math.max(0,after-before),unresolved=Number(wd.unresolved_count||0);
-    let msg="✅ משיכת התוצאות הסתיימה";
-    msg+="\nעודכנו עכשיו: "+updated+" משחקים";
-    msg+="\nעדיין ללא תוצאה: "+unresolved;
-    if(unresolved>0&&Array.isArray(wd.unresolved)&&wd.unresolved.length){
-      msg+="\n\nממתינים:";
-      wd.unresolved.slice(0,8).forEach(g=>{msg+="\n• "+(g.home_team||"")+" - "+(g.away_team||"")});
+    const before=new Set(allGames.filter(g=>g.result!=null).map(g=>String(g.id)));
+    const headers={"apikey":KEY,"Content-Type":"application/json","x-admin-token":adminToken};
+    const callSync=async(slug)=>{
+      const response=await fetch(SB_URL+"/functions/v1/"+slug,{method:"POST",headers,body:"{}"});
+      let data={};try{data=await response.json()}catch(e){}
+      return {ok:response.ok&&data.ok!==false,status:response.status,data,error:response.ok&&data.ok!==false?"":(data.error||("HTTP "+response.status))};
+    };
+    const main=await callSync("redball-football-sync-preview");
+    const watchdog=await callSync("redball-results-watchdog");
+    await load();
+    const newlySettled=allGames.filter(g=>g.result!=null&&!before.has(String(g.id)));
+    const pendingFromWatchdog=Number(watchdog.data?.unresolved_count);
+    const pending=Number.isFinite(pendingFromWatchdog)?pendingFromWatchdog:allGames.filter(g=>g.result==null&&g.starts_at&&new Date(g.starts_at).getTime()<=Date.now()).length;
+    const failures=[["הסנכרון הראשי",main],["בדיקת המקורות הנוספת",watchdog]].filter(x=>!x[1].ok);
+    let msg=failures.length?"⚠️ המשיכה הושלמה חלקית":"✅ בדיקת המשיכה הסתיימה";
+    msg+="\nתוצאות חדשות שנשמרו: "+newlySettled.length;
+    if(newlySettled.length===0)msg+="\nלא נמצאו כרגע תוצאות סופיות חדשות.";
+    msg+="\nמשחקים שעדיין ממתינים: "+pending;
+    if(main.data&&Number.isFinite(Number(main.data.count)))msg+="\nמשחקים שנבדקו בסנכרון הראשי: "+Number(main.data.count);
+    if(failures.length)msg+="\n\nשירותים שנכשלו:\n"+failures.map(x=>"• "+x[0]+": "+x[1].error).join("\n");
+    if(pending>0&&Array.isArray(watchdog.data?.unresolved)&&watchdog.data.unresolved.length){
+      msg+="\n\nממתינים לתוצאה:";
+      watchdog.data.unresolved.slice(0,8).forEach(g=>{msg+="\n• "+(g.home_team||"")+" - "+(g.away_team||"")});
     }
-    siteAlert(msg,"משיכת תוצאות");
+    siteAlert(msg,failures.length===2?"שגיאה":"משיכת תוצאות");
     if($("#adminTabGames")?.classList.contains("active"))await adminGames();
     if($("#adminTabHealth")?.classList.contains("active"))await loadSystemHealth();
     if($("#adminTabBets")?.classList.contains("active"))await adminAllBets(false);
