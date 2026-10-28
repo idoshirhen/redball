@@ -75,7 +75,7 @@ async function pullResultsNow(btn){
     const pendingFromWatchdog=Number(watchdog.data?.unresolved_count);
     const pending=Number.isFinite(pendingFromWatchdog)?pendingFromWatchdog:allGames.filter(g=>g.result==null&&g.starts_at&&new Date(g.starts_at).getTime()<=Date.now()).length;
     const failures=[["הסנכרון הראשי",main],["בדיקת המקורות הנוספת",watchdog]].filter(x=>!x[1].ok);
-    let msg=failures.length?"⚠️ המשיכה הושלמה חלקית":"✅ בדיקת המשיכה הסתיימה";
+    let msg=failures.length?"⚠️ המשיכה הושלמה חלקית":pending>0?"⚠️ המשיכה הסתיימה אבל נשארו משחקים בלי תוצאה":"✅ משיכת התוצאות הסתיימה בהצלחה";
     msg+="\nתוצאות חדשות שנשמרו: "+newlySettled.length;
     if(newlySettled.length===0)msg+="\nלא נמצאו כרגע תוצאות סופיות חדשות.";
     msg+="\nמשחקים שעדיין ממתינים: "+pending;
@@ -85,7 +85,7 @@ async function pullResultsNow(btn){
       msg+="\n\nממתינים לתוצאה:";
       watchdog.data.unresolved.slice(0,8).forEach(g=>{msg+="\n• "+(g.home_team||"")+" - "+(g.away_team||"")});
     }
-    siteAlert(msg,failures.length===2?"שגיאה":"משיכת תוצאות");
+    siteAlert(msg,failures.length===2?"שגיאה":pending>0?"⚠️ נדרשת בדיקה":"משיכת תוצאות");
     if($("#adminTabGames")?.classList.contains("active"))await adminGames();
     if($("#adminTabHealth")?.classList.contains("active"))await loadSystemHealth();
     if($("#adminTabBets")?.classList.contains("active"))await adminAllBets(false);
