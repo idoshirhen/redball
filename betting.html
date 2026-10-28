@@ -122,7 +122,55 @@ async function loadSystemHealth(){
     grid.innerHTML='<div class="healthCard" style="grid-column:1/-1;text-align:right"><b style="font-size:16px">מה עושים?</b><div class="small" style="margin-top:8px">נסה לרענן. אם השגיאה חוזרת, זו תקלה טכנית ולא משהו שאתה צריך לפתור ידנית.</div></div>';
   }
 }
-async function loadBettingAudit(){const box=$("#bettingAuditList");if(adminRole!=="sani"){box.innerHTML='<div class="statusMsg error">הגישה ליומן הפעולות היא למנכ״ל בלבד.</div>';return}box.innerHTML='<div class="muted">טוען...</div>';try{const d=await adminReq("list_betting_audit"),labels={bet_status_changed:"שינוי סטטוס טופס",bet_payment_marked:"טופס סומן כשולם",betting_game_update:"עדכון משחק",betting_game_insert:"הוספת משחק",betting_game_delete:"מחיקת משחק",betting_round_changed:"שינוי סשן",betting_game_odds_updated:"שינוי יחסים",betting_game_deleted:"מחיקת משחק",competition_imported:"ייבוא מפעל",betting_game_added:"הוספת משחק",betting_games_bulk_added:"הוספת משחקים מרוכזת",game_result_set:"שינוי תוצאת משחק",session_changed:"שינוי סשן",elo_refreshed:"רענון Elo",missing_data_completed:"השלמת נתונים חסרים",session_archived:"העברה לארכיון",betting_admin_login_failed:"כניסת מנהל נכשלה"},allowed=new Set(Object.keys(labels)),events=(d.events||[]).filter(e=>allowed.has(e.event_type)),groupable=new Set(["betting_game_update","betting_game_odds_updated"]),rows=[];for(const e of events){const prev=rows[rows.length-1],actor=e.actor_identifier||e.actor_type||"-",ts=new Date(e.created_at).getTime();if(groupable.has(e.event_type)&&prev&&prev.event_type===e.event_type&&prev.actor===actor&&Math.abs(prev.lastTs-ts)<=120000){prev.count++;prev.lastTs=ts;continue}rows.push({event:e,event_type:e.event_type,actor,count:1,lastTs:ts})}box.innerHTML=rows.length?rows.map(r=>{const e=r.event,label=labels[e.event_type]||e.event_type,detail=r.count>1?r.count+" משחקים":(e.details?.bet_code||e.details?.game||e.details?.session||e.details?.game_id||"");return '<div class="auditRow"><span>'+fmtDate(e.created_at)+'</span><b>'+esc(r.actor)+'</b><span>'+esc(label)+(detail?' · '+esc(String(detail)):'')+'</span></div>'}).join(''):'<div class="muted">אין עדיין פעולות הימורים ביומן.</div>'}catch(e){box.innerHTML='<div class="statusMsg error">'+esc(e.message)+'</div>'}}
+async function loadBettingAudit(){
+  const box=$("#bettingAuditList");
+  if(adminRole!=="sani"){box.innerHTML='<div class="statusMsg error">הגישה ליומן הפעולות היא למנכ״ל בלבד.</div>';return}
+  box.innerHTML='<div class="muted">טוען...</div>';
+  try{
+    const d=await adminReq("list_betting_audit"),raw=d.events||[];
+    const actorLabel=e=>{
+      const id=String(e.actor_identifier||"").toLowerCase();
+      if(e.actor_type==="betting_admin"){
+        if(id==="sani")return "Sani - מנכ״ל";
+        if(id==="vladi"||id==="betzi")return "גישת מנהלים";
+        return "ניהול";
+      }
+      if(e.actor_type==="worker")return e.actor_identifier||"עובד";
+      if(e.actor_type==="system"||e.actor_type==="cron"||e.actor_type==="watchdog")return "מערכת אוטומטית";
+      return e.actor_identifier||e.actor_type||"מערכת";
+    };
+    const describe=e=>{
+      const x=e.details||{};
+      if(e.event_type==="bet_status_changed"){
+        const oldPay=x.old_payment_status,newPay=x.new_payment_status,oldRes=x.old_result_status,newRes=x.new_result_status;
+        if(oldPay==="pending"&&newPay==="paid")return {actor:e.actor_identifier||"עובד",label:"אישור טופס",detail:x.bet_code||""};
+        if(oldPay===newPay&&oldRes!==newRes)return {actor:"מערכת אוטומטית",label:newRes==="won"?"טופס זכה":newRes==="lost"?"טופס הפסיד":newRes==="cancelled"?"טופס בוטל":"תוצאת טופס עודכנה",detail:x.bet_code||""};
+        if(newRes==="cancelled")return {actor:actorLabel(e),label:"ביטול טופס",detail:x.bet_code||""};
+        return {actor:actorLabel(e),label:"עדכון טופס",detail:x.bet_code||""};
+      }
+      if(e.event_type==="bet_payment_marked")return {actor:actorLabel(e),label:"אישור טופס",detail:x.bet_code||x.id||""};
+      if(e.event_type==="betting_game_odds_updated")return {actor:actorLabel(e),label:"שינוי יחסים",detail:x.game||x.game_id||""};
+      if(e.event_type==="game_result_set")return {actor:actorLabel(e),label:e.details?.result?"עדכון תוצאת משחק":"ביטול תוצאת משחק",detail:x.game||x.game_id||""};
+      if(e.event_type==="betting_game_added"||e.event_type==="betting_game_insert")return {actor:actorLabel(e),label:"הוספת משחק",detail:x.game||x.game_id||""};
+      if(e.event_type==="betting_game_deleted"||e.event_type==="betting_game_delete")return {actor:actorLabel(e),label:"מחיקת משחק",detail:x.game||x.game_id||""};
+      if(e.event_type==="betting_games_bulk_added")return {actor:actorLabel(e),label:"הוספת משחקים",detail:x.count?String(x.count)+" משחקים":""};
+      if(e.event_type==="competition_imported")return {actor:actorLabel(e),label:"ייבוא משחקים",detail:x.session||x.competition||""};
+      if(e.event_type==="session_changed"){
+        const action={create:"יצירת סשן",rename:"שינוי שם סשן",open:"פתיחת סשן",lock:"נעילת סשן",show:"הצגת סשן",hide:"הסתרת סשן",move:"שינוי סדר סשן"}[x.action]||"עדכון סשן";
+        return {actor:actorLabel(e),label:action,detail:x.session||("סשן "+(x.round_no??""))};
+      }
+      if(e.event_type==="elo_refreshed")return {actor:actorLabel(e),label:"רענון יחסים / Elo",detail:""};
+      if(e.event_type==="missing_data_completed")return {actor:actorLabel(e),label:"השלמת נתונים",detail:""};
+      if(e.event_type==="session_archived")return {actor:actorLabel(e),label:"העברת סשן לארכיון",detail:x.session||""};
+      if(e.event_type==="betting_admin_login_failed")return {actor:"מערכת",label:"ניסיון כניסה כושל לניהול",detail:""};
+      return null;
+    };
+    /* betting_game_update is a low-level DB trigger with no reliable actor.
+       Hide it; human/admin changes have dedicated attributed events above. */
+    const events=raw.filter(e=>e.event_type!=="betting_game_update").map(e=>({e,d:describe(e)})).filter(x=>x.d);
+    box.innerHTML=events.length?events.map(({e,d})=>'<div class="auditRow"><span>'+fmtDate(e.created_at)+'</span><b>'+esc(d.actor)+'</b><span>'+esc(d.label)+(d.detail?' · '+esc(String(d.detail)):'')+'</span></div>').join(''):'<div class="muted">אין עדיין פעולות הימורים ביומן.</div>';
+  }catch(e){box.innerHTML='<div class="statusMsg error">'+esc(e.message)+'</div>'}
+}
 async function openAdmin(){if(adminToken){if(!adminRole&&!(await resolveAdminRole()))return showAdminLogin();applyAdminPermissions();showPage("admin");await showAdminTab("rounds")}else showAdminLogin()}$("#adminNav").onclick=openAdmin;$("#closeAdminLogin").onclick=()=>$("#adminLoginModal").classList.remove("show");$("#adminLoginModal").onclick=e=>{if(e.target.id==="adminLoginModal")$("#adminLoginModal").classList.remove("show")};function toggleTicket(force){const t=$("#ticket"),b=$("#ticketBackdrop"),open=typeof force==="boolean"?force:!t.classList.contains("open");t.classList.toggle("open",open);b.classList.toggle("show",open)}$("#mobileTicketBar").onclick=()=>toggleTicket();$("#ticketBackdrop").onclick=()=>toggleTicket(false);
 function leagueDisplayName(name){const n=String(name||"").trim(),map={"Premier League":"ליגה אנגלית","LaLiga":"ליגה ספרדית","Primera División":"ליגה ספרדית","Serie A":"ליגה איטלקית","Bundesliga":"ליגה גרמנית","Ligue 1":"ליגה צרפתית","UEFA Nations League":"ליגת אומות","UEFA Champions League":"ליגת אלופות","Ligat Ha'al":"ליגת על","Israeli Premier League":"ליגת על","UFC":"UFC"};return map[n]||n||"משחקים נוספים"}
 function renderPublicGame(g,activeSession,now){const started=!!g.starts_at&&new Date(g.starts_at).getTime()<=now,finished=!!g.result,sessionLocked=!activeSession?.is_open,locked=!g.is_open||started||sessionLocked,isUfc=String(g.league_name||'').toUpperCase()==='UFC',isBallon=String(g.league_name||'')==="Ballon d'Or",score=!isUfc&&!isBallon&&g.api_home_goals!=null&&g.api_away_goals!=null?Number(g.api_home_goals)+' - '+Number(g.api_away_goals):'',state=finished?'<span class="gameState finished">✅ הסתיים</span>':sessionLocked?'<span class="gameState locked">🔒 הסשן נעול</span>':locked?'<span class="gameState locked">🔒 נעול להימורים</span>':'',result=finished?'<div class="gameResult">תוצאה: <b>'+esc(isBallon?(g.result==='1'?'זכה':'לא זכה'):g.result==='1'?g.home_team:g.result==='2'?g.away_team:g.result==='X'?'תיקו':String(g.result))+'</b>'+(score?' · '+esc(score):'')+'</div>':'',options=isBallon?[["",g.home_team,g.odd_home,0]]:isUfc?[["",g.home_team,g.odd_home,0],["",g.away_team,g.odd_away,2]]:[["1",g.home_team,g.odd_home,0],["X","תיקו",g.odd_draw,1],["2",g.away_team,g.odd_away,2]],title=isBallon?'🏆 '+esc(g.home_team):esc(g.home_team)+' 🆚 '+esc(g.away_team);return '<div class="game '+(locked?'lockedGame':'')+'" data-game-id="'+g.id+'"><div class="small">'+(g.starts_at?fmtDate(g.starts_at):"")+'</div>'+state+'<div class="teams">'+title+'</div><div class="odds '+(isBallon?'ballonOdds':isUfc?'ufcOdds':'')+'">'+options.map(x=>'<button class="odd" data-j="'+x[3]+'" '+(locked?'disabled':'')+'>'+(x[0]?'<span class="mark">'+x[0]+'</span>':'')+'<span class="teamName">'+esc(x[1])+'</span><b>'+Number(x[2]).toFixed(2)+'</b></button>').join("")+'</div>'+result+'</div>'}
