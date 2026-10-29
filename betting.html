@@ -36,6 +36,7 @@
 .liveTeamTop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}.liveTeamMiniLogo{width:46px;height:46px;object-fit:contain;flex:0 0 46px}@media(max-width:600px){.liveTeamMiniLogo{width:38px;height:38px;flex-basis:38px}}
 .leagueMiniLogo{width:24px;height:24px;object-fit:contain;flex:0 0 24px}
 .liveTeamTop span{display:block;text-align:center;line-height:1.15;white-space:normal;overflow:visible;text-overflow:clip;max-width:100%}
+.teamLogoFallback,.leagueLogoFallback{width:46px;height:46px;flex:0 0 46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#252525,#161616);border:1px solid rgba(255,77,225,.45);color:#ff7ae8;font-size:13px;font-weight:900;line-height:1;text-align:center;box-shadow:0 0 12px rgba(255,77,225,.08)}.leagueLogoFallback{width:24px;height:24px;flex-basis:24px;font-size:10px}.leagueMiniLogo{max-width:46px}@media(max-width:600px){.teamLogoFallback{width:38px;height:38px;flex-basis:38px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -215,7 +216,7 @@ const LIVE_TEAM_LOGOS={
 "בורנמות'":"https://assets.footylogos.com/logos/afc-bournemouth/afc-bournemouth-logo-footylogos.svg",
 "אלאבס":"https://assets.footylogos.com/logos/deportivo-alaves/deportivo-alaves-logo-footylogos.svg"
 
-,"פריז סן ז'רמן":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Paris%20Saint-Germain%20F.C.%20logo%20(free%20version).svg"
+,"פריז סן ז'רמן":"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Paris_Saint-Germain_F.C._logo_%28free_version%29.svg/250px-Paris_Saint-Germain_F.C._logo_%28free_version%29.svg.png"
 ,"פנרבחצ'ה":"https://assets.footylogos.com/logos/fenerbahce/fenerbahce-logo-footylogos.svg"
 ,"ברוז'":"https://assets.footylogos.com/logos/club-brugge/club-brugge-logo-footylogos.svg"
 ,"קלאב ברוז'":"https://assets.footylogos.com/logos/club-brugge/club-brugge-logo-footylogos.svg"
@@ -245,15 +246,16 @@ function teamLogoCandidates(name){
  }
  return [...new Set(out)]
 }
+function logoFallbackText(name){const parts=String(name||"").trim().split(/\s+/).filter(Boolean);if(!parts.length)return"⚽";return parts.slice(0,2).map(x=>x[0]||"").join("").toUpperCase()||"⚽"}
 function tryNextTeamLogo(img){
  const urls=String(img.dataset.logoCandidates||"").split("|").filter(Boolean);
  const next=Number(img.dataset.logoIndex||"0")+1;
  if(next<urls.length){img.dataset.logoIndex=String(next);img.src=urls[next];return}
- BROKEN_LOGOS.add(String(img.closest(".liveTeamTop")?.innerText||"team").trim());img.remove()
+ const wrap=img.closest(".liveTeamTop"),name=String(wrap?.querySelector("span:last-child")?.textContent||"team").trim();BROKEN_LOGOS.add(name);img.outerHTML='<span class="teamLogoFallback">'+esc(logoFallbackText(name))+'</span>'
 }
 function liveTeamTopHtml(name){
  const urls=teamLogoCandidates(name);
- return '<div class="liveTeamTop">'+(urls.length?'<img class="liveTeamMiniLogo" src="'+esc(urls[0])+'" data-logo-index="0" data-logo-candidates="'+esc(urls.join("|"))+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="tryNextTeamLogo(this)">':'')+'<span>'+esc(name)+'</span></div>'
+ return '<div class="liveTeamTop">'+(urls.length?'<img class="liveTeamMiniLogo" src="'+esc(urls[0])+'" data-logo-index="0" data-logo-candidates="'+esc(urls.join("|"))+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="tryNextTeamLogo(this)">':'<span class="teamLogoFallback">'+esc(logoFallbackText(name))+'</span>')+'<span>'+esc(name)+'</span></div>'
 }
 function renderPublicGame(g,activeSession,now){
  const started=!!g.starts_at&&new Date(g.starts_at).getTime()<=now,
@@ -270,18 +272,45 @@ function renderPublicGame(g,activeSession,now){
  return '<div class="game '+(!isUfc&&!isBallon?'liveMatchLayout ':'')+(locked?'lockedGame':'')+'" data-game-id="'+g.id+'"><div class="small">'+(g.starts_at?fmtDate(g.starts_at):"")+'</div>'+state+titleBlock+'<div class="odds '+(isBallon?'ballonOdds':isUfc?'ufcOdds':'')+'">'+options.map(x=>'<button class="odd" data-j="'+x[3]+'" '+(locked?'disabled':'')+'>'+(x[0]?'<span class="mark">'+x[0]+'</span>':'')+'<span class="teamName">'+esc(x[1])+'</span><b>'+Number(x[2]).toFixed(2)+'</b></button>').join("")+'</div>'+result+'</div>'
 }
 const LIVE_LEAGUE_LOGOS={
-"Premier League":["https://commons.wikimedia.org/wiki/Special:Redirect/file/Premier%20League.svg"],
-"Bundesliga":["https://commons.wikimedia.org/wiki/Special:Redirect/file/Bundesliga%20logo.svg"],
-"Serie A":["https://commons.wikimedia.org/wiki/Special:Redirect/file/Serie%20A.svg"],
-"LaLiga":["https://commons.wikimedia.org/wiki/Special:Redirect/file/LaLiga%20logo%202023.svg","https://commons.wikimedia.org/wiki/Special:Redirect/file/LaLiga%20EA%20Sports%202023%20Vertical%20Logo.svg"],
-"La Liga":["https://commons.wikimedia.org/wiki/Special:Redirect/file/LaLiga%20logo%202023.svg","https://commons.wikimedia.org/wiki/Special:Redirect/file/LaLiga%20EA%20Sports%202023%20Vertical%20Logo.svg"],
-"Ligue 1":["https://commons.wikimedia.org/wiki/Special:Redirect/file/Ligue%201%20McDonald's%20logo.svg","https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo%20Ligue%201%20McDonald's%202024.svg"],
-"UEFA Champions League":["https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA%20Champions%20League%20logo%20no%20text.svg","https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA%20Champions%20League%20logo.svg"],
-"UEFA Nations League":["https://assets.footylogos.com/logos/uefa-nations-league/uefa-nations-league-logo-footylogos.svg"],
-"Israeli Premier League":["https://assets.footylogos.com/logos/israeli-premier-league/israeli-premier-league-logo-footylogos.svg"],
-"גביע גרמני":["https://commons.wikimedia.org/wiki/Special:Redirect/file/DFB-Pokal%20Wordmark.svg"],
-"גביע הליגה האנגלי":["https://assets.footylogos.com/logos/efl-cup/efl-cup-logo-footylogos.svg","https://assets.footylogos.com/logos/carabao-cup/carabao-cup-logo-footylogos.svg"],
-"UFC":["https://commons.wikimedia.org/wiki/Special:Redirect/file/UFC%20Logo.svg"],
+"Premier League":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Premier_League.svg/250px-Premier_League.svg.png"
+],
+"Bundesliga":[
+ "https://upload.wikimedia.org/wikipedia/commons/1/15/Bundesliga_logo.svg"
+],
+"Serie A":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Serie_A.svg/240px-Serie_A.svg.png"
+],
+"LaLiga":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/LaLiga_logo_2023.svg/250px-LaLiga_logo_2023.svg.png"
+],
+"La Liga":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/LaLiga_logo_2023.svg/250px-LaLiga_logo_2023.svg.png"
+],
+"Ligue 1":[
+ "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ligue%201%20McDonald%27s%20logo.svg",
+ "https://assets.footylogos.com/logos/ligue-1/ligue-1-logo-footylogos.svg"
+],
+"UEFA Champions League":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/UEFA_Champions_League_logo.svg/250px-UEFA_Champions_League_logo.svg.png"
+],
+"UEFA Nations League":[
+ "https://assets.footylogos.com/logos/uefa-nations-league/uefa-nations-league-logo-footylogos.svg"
+],
+"Israeli Premier League":[
+ "https://commons.wikimedia.org/wiki/Special:Redirect/file/Football%20Israel.svg",
+ "https://flagcdn.com/w80/il.png"
+],
+"גביע גרמני":[
+ "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/DFB-Pokal_Wordmark.svg/330px-DFB-Pokal_Wordmark.svg.png"
+],
+"גביע הליגה האנגלי":[
+ "https://commons.wikimedia.org/wiki/Special:Redirect/file/English%20Football%20League%20Wordmark.svg",
+ "https://commons.wikimedia.org/wiki/Special:Redirect/file/League%20Cup%20Trophy.png"
+],
+"UFC":[
+ "https://commons.wikimedia.org/wiki/Special:Redirect/file/UFC%20Logo.svg"
+],
 "Ballon d'Or":[]
 };
 const BROKEN_LOGOS=new Set();
@@ -290,11 +319,11 @@ function tryNextLeagueLogo(img){
  const next=Number(img.dataset.logoIndex||"0")+1;
  BROKEN_LOGOS.add(String(img.dataset.logoName||"league"));
  if(next<urls.length){img.dataset.logoIndex=String(next);img.src=urls[next];return}
- img.remove()
+ const name=String(img.dataset.logoName||"league");img.outerHTML='<span class="leagueLogoFallback">'+esc(logoFallbackText(name))+'</span>'
 }
 function liveLeagueLogoHtml(name){
  const key=String(name||"").trim(),urls=Array.isArray(LIVE_LEAGUE_LOGOS[key])?LIVE_LEAGUE_LOGOS[key]:[];
- return urls.length?'<img class="leagueMiniLogo" src="'+esc(urls[0])+'" data-logo-index="0" data-logo-name="'+esc(key)+'" data-logo-candidates="'+esc(urls.join("|"))+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="tryNextLeagueLogo(this)">':''
+ return urls.length?'<img class="leagueMiniLogo" src="'+esc(urls[0])+'" data-logo-index="0" data-logo-name="'+esc(key)+'" data-logo-candidates="'+esc(urls.join("|"))+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="tryNextLeagueLogo(this)">':'<span class="leagueLogoFallback">'+esc(logoFallbackText(key))+'</span>'
 }
 window.redballLogoAudit=()=>({
  broken:[...BROKEN_LOGOS],
