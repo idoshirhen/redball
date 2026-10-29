@@ -192,7 +192,28 @@ const LIVE_TEAM_LOGOS={
 "קריסטל פאלאס":"https://assets.footylogos.com/logos/crystal-palace/crystal-palace-logo-footylogos.svg",
 "אסטון וילה":"https://assets.footylogos.com/logos/aston-villa/aston-villa-logo-footylogos.svg",
 "ברצלונה":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.481f5fb3.png",
-"אינטר":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png"
+"אינטר":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png",
+"מילאן":"https://assets.footylogos.com/logos/ac-milan/ac-milan-logo-footylogos.svg",
+"באיירן מינכן":"https://assets.footylogos.com/logos/bayern-munich/bayern-munich-logo-footylogos.svg",
+"דורטמונד":"https://assets.footylogos.com/logos/borussia-dortmund/borussia-dortmund-logo-footylogos.svg",
+"לברקוזן":"https://assets.footylogos.com/logos/bayer-leverkusen/bayer-leverkusen-logo-footylogos.svg",
+"שטוטגרט":"https://assets.footylogos.com/logos/vfb-stuttgart/vfb-stuttgart-logo-footylogos.svg",
+"וולפסבורג":"https://assets.footylogos.com/logos/vfl-wolfsburg/vfl-wolfsburg-logo-footylogos.svg",
+"ורדר ברמן":"https://assets.footylogos.com/logos/werder-bremen/werder-bremen-logo-footylogos.svg",
+"פרייבורג":"https://assets.footylogos.com/logos/sc-freiburg/sc-freiburg-logo-footylogos.svg",
+"המבורג":"https://assets.footylogos.com/logos/hamburger-sv/hamburger-sv-logo-footylogos.svg",
+"איינטרכט פרנקפורט":"https://assets.footylogos.com/logos/eintracht-frankfurt/eintracht-frankfurt-logo-footylogos.svg",
+"יובנטוס":"https://assets.footylogos.com/logos/juventus/juventus-logo-footylogos.svg",
+"נאפולי":"https://assets.footylogos.com/logos/napoli/napoli-logo-footylogos.svg",
+"אטאלנטה":"https://assets.footylogos.com/logos/atalanta/atalanta-logo-footylogos.svg",
+"בולוניה":"https://assets.footylogos.com/logos/bologna/bologna-logo-footylogos.svg",
+"פיורנטינה":"https://assets.footylogos.com/logos/fiorentina/fiorentina-logo-footylogos.svg",
+"ניוקאסל":"https://assets.footylogos.com/logos/newcastle-united/newcastle-united-logo-footylogos.svg",
+"אברטון":"https://assets.footylogos.com/logos/everton/everton-logo-footylogos.svg",
+"פולהאם":"https://assets.footylogos.com/logos/fulham/fulham-logo-footylogos.svg",
+"ברייטון":"https://assets.footylogos.com/logos/brighton-hove-albion/brighton-hove-albion-logo-footylogos.svg",
+"בורנמות'":"https://assets.footylogos.com/logos/afc-bournemouth/afc-bournemouth-logo-footylogos.svg",
+"אלאבס":"https://assets.footylogos.com/logos/deportivo-alaves/deportivo-alaves-logo-footylogos.svg"
 };
 function liveTeamTopHtml(name){const logo=LIVE_TEAM_LOGOS[String(name||"").trim()];return '<div class="liveTeamTop">'+(logo?'<img class="liveTeamMiniLogo" src="'+esc(logo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<span>'+esc(name)+'</span></div>'}
 function renderPublicGame(g,activeSession,now){
