@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://toppng.com https://pngimg.com https://upload.wikimedia.org https://assets.football-logos.cc; connect-src 'self' https://eqtgyxabuosyinnhairr.supabase.co wss://eqtgyxabuosyinnhairr.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://toppng.com https://pngimg.com https://upload.wikimedia.org https://assets.football-logos.cc https://assets.footylogos.com; connect-src 'self' https://eqtgyxabuosyinnhairr.supabase.co wss://eqtgyxabuosyinnhairr.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <title>הימורי RedBall</title>
@@ -185,7 +185,13 @@ const LIVE_TEAM_LOGOS={
 "צ'לסי":"https://assets.football-logos.cc/logos/england/256x256/chelsea.ede8a2a7.png",
 "מנצ'סטר יונייטד":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png",
 "מנצ'סטר סיטי":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png",
-"ארסנל":"https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png"
+"ארסנל":"https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png",
+"ליברפול":"https://assets.footylogos.com/logos/liverpool-fc/liverpool-fc-logo-footylogos.svg",
+"טוטנהאם":"https://assets.footylogos.com/logos/tottenham-hotspur/tottenham-hotspur-logo-footylogos.svg",
+"קריסטל פאלאס":"https://assets.footylogos.com/logos/crystal-palace/crystal-palace-logo-footylogos.svg",
+"אסטון וילה":"https://assets.footylogos.com/logos/aston-villa/aston-villa-logo-footylogos.svg",
+"ברצלונה":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.481f5fb3.png",
+"אינטר":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png"
 };
 function liveTeamTopHtml(name){const logo=LIVE_TEAM_LOGOS[String(name||"").trim()];return '<div class="liveTeamTop">'+(logo?'<img class="liveTeamMiniLogo" src="'+esc(logo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<span>'+esc(name)+'</span></div>'}
 function renderPublicGame(g,activeSession,now){
