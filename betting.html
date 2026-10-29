@@ -182,12 +182,10 @@ async function loadBettingAudit(){
 async function openAdmin(){if(adminToken){if(!adminRole&&!(await resolveAdminRole()))return showAdminLogin();applyAdminPermissions();showPage("admin");await showAdminTab("rounds")}else showAdminLogin()}$("#adminNav").onclick=openAdmin;$("#closeAdminLogin").onclick=()=>$("#adminLoginModal").classList.remove("show");$("#adminLoginModal").onclick=e=>{if(e.target.id==="adminLoginModal")$("#adminLoginModal").classList.remove("show")};function toggleTicket(force){const t=$("#ticket"),b=$("#ticketBackdrop"),open=typeof force==="boolean"?force:!t.classList.contains("open");t.classList.toggle("open",open);b.classList.toggle("show",open)}$("#mobileTicketBar").onclick=()=>toggleTicket();$("#ticketBackdrop").onclick=()=>toggleTicket(false);
 function leagueDisplayName(name){const n=String(name||"").trim(),map={"Premier League":"ליגה אנגלית","LaLiga":"ליגה ספרדית","Primera División":"ליגה ספרדית","Serie A":"ליגה איטלקית","Bundesliga":"ליגה גרמנית","Ligue 1":"ליגה צרפתית","UEFA Nations League":"ליגת אומות","UEFA Champions League":"ליגת אלופות","Ligat Ha'al":"ליגת על","Israeli Premier League":"ליגת על","UFC":"UFC"};return map[n]||n||"משחקים נוספים"}
 const LIVE_TEAM_LOGOS={
-"צ'לסי":"https://assets.football-logos.cc/logos/england/256x256/chelsea.ede8a2a7.png",
-"מנצ'סטר יונייטד":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png",
-"מנצ'סטר סיטי":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png",
-"ארסנל":"https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png",
-"מילאן":"https://assets.football-logos.cc/logos/italy/256x256/milan.75d56f90.png",
-"באיירן מינכן":"https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png"
+"צ'לסי":"https://toppng.com/uploads/preview/chelsea-fc-vector-logo-11574230515h7qxtmmgxz.png",
+"מנצ'סטר יונייטד":"https://pngimg.com/uploads/manchester_united/manchester_united_PNG22.png",
+"מנצ'סטר סיטי":"https://toppng.com/public/uploads/preview/manchester-city-fc-logo-vector-free-download-11573934108mvunqxz571.png",
+"ארסנל":"https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"
 };
 function liveTeamTopHtml(name){const logo=LIVE_TEAM_LOGOS[String(name||"").trim()];return '<div class="liveTeamTop">'+(logo?'<img class="liveTeamMiniLogo" src="'+esc(logo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<span>'+esc(name)+'</span></div>'}
 function renderPublicGame(g,activeSession,now){
