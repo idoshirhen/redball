@@ -215,7 +215,36 @@ const LIVE_TEAM_LOGOS={
 "בורנמות'":"https://assets.footylogos.com/logos/afc-bournemouth/afc-bournemouth-logo-footylogos.svg",
 "אלאבס":"https://assets.footylogos.com/logos/deportivo-alaves/deportivo-alaves-logo-footylogos.svg"
 };
-function liveTeamTopHtml(name){const logo=LIVE_TEAM_LOGOS[String(name||"").trim()];return '<div class="liveTeamTop">'+(logo?'<img class="liveTeamMiniLogo" src="'+esc(logo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<span>'+esc(name)+'</span></div>'}
+const TEAM_LOGO_ALIASES={"לאנס":["RC Lens","Lens"],"ספורטינג ליסבון":["Sporting CP","Sporting Clube de Portugal"],"סבאח":["Sabah FK"],"סלביה פראג":["Slavia Praha","SK Slavia Praha"],"ארסנל":["Arsenal FC","Arsenal"],"ליל":["LOSC Lille","Lille OSC","Lille"],"גלאטסראיי":["Galatasaray"],"ברצלונה":["FC Barcelona","Barcelona"],"ר.ב לייפציג":["RB Leipzig"],"ר.ב. לייפציג":["RB Leipzig"],"פ.ס.וו איינדהובן":["PSV Eindhoven","PSV"],"ויקינג":["Viking FK","Viking"],"באיירן מינכן":["Bayern München","Bayern Munich"],"אינטר":["Inter","Inter Milan"],"אתלטיקו מדריד":["Atlético Madrid","Atletico Madrid"],"ויאריאל":["Villarreal CF","Villarreal"],"נאפולי":["SSC Napoli","Napoli"],"דורטמונד":["Borussia Dortmund","Dortmund"],"בורוסיה דורטמונד":["Borussia Dortmund"],"שטוטגרט":["VfB Stuttgart","Stuttgart"],"בודו גלימט":["FK Bodø/Glimt","Bodø/Glimt","Bodo/Glimt"],"בודה/גלימט":["FK Bodø/Glimt","Bodø/Glimt","Bodo/Glimt"],"ליברפול":["Liverpool","Liverpool FC"],"פורטו":["FC Porto","Porto"],"רומא":["AS Roma","Roma"],"סלובן ברטיסלבה":["Slovan Bratislava","ŠK Slovan Bratislava"],"א.א.ק אתונה":["AEK Athens","AEK Athens FC"],"קומו":["Como 1907","Como"],"לאסק":["LASK Linz","LASK"],"לאסק לינץ":["LASK Linz","LASK"],"אסטון וילה":["Aston Villa"],"ריאל מדריד":["Real Madrid"],"שחטאר דונייצק":["Shakhtar Donetsk","FC Shakhtar Donetsk"],"ריאל בטיס":["Real Betis"],"פיינורד":["Feyenoord Rotterdam","Feyenoord"],"אויפן":["KAS Eupen","AS Eupen","Eupen"],"אלמניה אאכן":["Alemannia Aachen"],"יאן רגנסבורג":["SSV Jahn Regensburg","Jahn Regensburg"],"WSG טירול":["WSG Tirol","WSG Wattens"],"גרויטר פירת":["SpVgg Greuther Fürth","Greuther Fürth","Greuther Furth"],"סאוטה":["AD Ceuta FC","Ceuta"],"ורדר ברמן":["Werder Bremen","SV Werder Bremen","Werder"],"ליון":["Olympique Lyon","Olympique Lyonnais","Lyon"],"מלאגה":["Malaga CF","Málaga CF","Malaga"],"אספניול":["Espanyol Barcelona","RCD Espanyol","Espanyol"],"לידס":["Leeds","Leeds United","Leeds United FC"],"טוטנהאם":["Tottenham Hotspur","Tottenham"],"צ'לסי":["Chelsea","Chelsea FC"],"בורנמות'":["AFC Bournemouth","Bournemouth"],"אוגסבורג":["FC Augsburg","Augsburg"],"חטאפה":["Getafe CF","Getafe"],"פארמה":["Parma Calcio","Parma"],"פרוזינונה":["Frosinone Calcio","Frosinone"],"לה מאן":["Le Mans FC","Le Mans"],"ססואולו":["Sassuolo Calcio","US Sassuolo","Sassuolo"],"מילאן":["AC Milan","Milan"],"קליארי":["Cagliari Calcio","Cagliari"],"יובנטוס":["Juventus Turin","Juventus FC","Juventus"],"טרואה":["ESTAC Troyes","Troyes"],"מארסיי":["Olympique Marseille","Olympique de Marseille","Marseille"],"אוסאסונה":["CA Osasuna","Osasuna"],"ראסינג סנטנדר":["Racing Santander","Racing de Santander"],"ולנסיה":["Valencia CF","Valencia"],"הפועל באר שבע":["Beer-Sheva","Hapoel Beer Sheva","Hapoel Beersheba"],"מכבי תל אביב":["Maccabi Tel Aviv"],"מכבי חיפה":["Maccabi Haifa"],"בית\"ר ירושלים":["Beitar","Beitar Jerusalem"],"הפועל תל אביב":["Hapoel Tel Aviv"],"הפועל חיפה":["Hapoel Haifa"],"מכבי נתניה":["Netanya","Maccabi Netanya"],"הפועל ירושלים":["Hapoel Jerusalem"],"הפועל פתח תקווה":["H Petach Tikva","Hapoel Petah Tikva","Hapoel Petach Tikva"],"עירוני טבריה":["Ironi Tiberias"],"עירוני קריית שמונה":["Kiryat Shmona","Ironi Kiryat Shmona"],"בני סכנין":["Bnei Sakhinin","Bnei Sakhnin"],"מכבי פתח תקווה":["M Petach Tikva","Maccabi Petah Tikva","Maccabi Petach Tikva"],"הפועל רמת גן":["Hapoel Ramat Gan"],"ברייטון":["Brighton","Brighton & Hove Albion","Brighton and Hove Albion"],"איינטרכט פרנקפורט":["Eintracht Frankfurt","Frankfurt"],"המבורג":["Hamburger SV","Hamburg","HSV"],"פיורנטינה":["Fiorentina","ACF Fiorentina"],"אודינזה":["Udinese","Udinese Calcio"],"פרייבורג":["SC Freiburg","Freiburg"],"מונאקו":["Monaco","AS Monaco"],"וולפסבורג":["VfL Wolfsburg","Wolfsburg"],"בולוניה":["Bologna","Bologna FC","Bologna FC 1909"],"פולהאם":["Fulham","Fulham FC"],"קריסטל פאלאס":["Crystal Palace","Crystal Palace FC"],"אטאלנטה":["Atalanta","Atalanta BC"],"אברטון":["Everton","Everton FC"],"ניוקאסל":["Newcastle United","Newcastle","Newcastle United FC"],"ישראל":["Israel"],"ספרד":["Spain"],"צרפת":["France"],"גרמניה":["Germany"],"איטליה":["Italy"],"אנגליה":["England"],"פורטוגל":["Portugal"],"הולנד":["Netherlands"],"בלגיה":["Belgium"],"קרואטיה":["Croatia"],"דנמרק":["Denmark"],"שוויץ":["Switzerland"],"אוסטריה":["Austria"],"נורווגיה":["Norway"],"שוודיה":["Sweden"],"פולין":["Poland"],"יוון":["Greece"],"טורקיה":["Turkey","Türkiye"],"סרביה":["Serbia"],"אוקראינה":["Ukraine"],"צכיה":["Czech Republic","Czechia"],"אירלנד":["Republic of Ireland","Ireland"],"סקוטלנד":["Scotland"],"ויילס":["Wales"],"ארגנטינה":["Argentina"],"ברזיל":["Brazil"],"אורוגוואי":["Uruguay"],"קולומביה":["Colombia"],"ארה\"ב":["USA","United States"],"מקסיקו":["Mexico"],"יפן":["Japan"],"דרום קוריאה":["Korea Republic","South Korea"],"מרוקו":["Morocco"],"מצרים":["Egypt"],"ניגריה":["Nigeria"],"גאנה":["Ghana"],"סלובניה":["Slovenia"],"צפון מקדוניה":["North Macedonia","North Macedonia FYR","FYR Macedonia"],"אלבניה":["Albania"],"סן מרינו":["San Marino"],"בלארוס":["Belarus"],"פינלנד":["Finland"],"קזחסטן":["Kazakhstan"],"איי פארו":["Faroe Islands","Faroe Islands"],"מולדובה":["Moldova"],"סלובקיה":["Slovakia"],"אסטוניה":["Estonia"],"איסלנד":["Iceland"],"לוקסמבורג":["Luxembourg"],"בולגריה":["Bulgaria"]};
+function logoSlug(v){
+ return String(v||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")
+}
+function teamLogoCandidates(name){
+ const key=String(name||"").trim(),out=[];
+ if(LIVE_TEAM_LOGOS[key])out.push(LIVE_TEAM_LOGOS[key]);
+ for(const alias of (TEAM_LOGO_ALIASES[key]||[])){
+   const variants=[
+     alias,
+     String(alias).replace(/&/g,"and"),
+     String(alias).replace(/\b(fc|cf|ac|ssc|sc|afc|sv|vfb|fk|kv)\b/gi," ").replace(/\s+/g," ").trim()
+   ];
+   for(const v of variants){
+     const slug=logoSlug(v);
+     if(slug)out.push("https://assets.footylogos.com/logos/"+slug+"/"+slug+"-logo-footylogos.svg");
+   }
+ }
+ return [...new Set(out)]
+}
+function tryNextTeamLogo(img){
+ const urls=String(img.dataset.logoCandidates||"").split("|").filter(Boolean);
+ const next=Number(img.dataset.logoIndex||"0")+1;
+ if(next<urls.length){img.dataset.logoIndex=String(next);img.src=urls[next];return}
+ img.remove()
+}
+function liveTeamTopHtml(name){
+ const urls=teamLogoCandidates(name);
+ return '<div class="liveTeamTop">'+(urls.length?'<img class="liveTeamMiniLogo" src="'+esc(urls[0])+'" data-logo-index="0" data-logo-candidates="'+esc(urls.join("|"))+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="tryNextTeamLogo(this)">':'')+'<span>'+esc(name)+'</span></div>'
+}
 function renderPublicGame(g,activeSession,now){
  const started=!!g.starts_at&&new Date(g.starts_at).getTime()<=now,
  finished=!!g.result,
