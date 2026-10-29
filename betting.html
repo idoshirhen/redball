@@ -30,9 +30,10 @@
 .adminRoleChoices{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}.adminRoleChoice{width:100%;text-align:right;background:#171717;color:#ddd;border:1px solid #3b3b3b;border-radius:11px;padding:12px 14px;cursor:pointer;font-weight:800}.adminRoleChoice:hover{border-color:#6ed8ff}.adminRoleChoice.selected{border-color:#ff4de1;background:linear-gradient(180deg,rgba(255,77,225,.25),rgba(110,216,255,.10));color:#fff}.adminRoleChoice small{display:block;color:#888;font-weight:500;margin-top:3px}.adminRoleChoice.selected small{color:#bbb}.adminIdentity{margin:7px 0 0;color:#6ed8ff;font-weight:800}.adminTabBtn.roleHidden,.adminRoleRestricted{display:none!important}
 .healthGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.healthCard{background:#111;border:1px solid #333;border-radius:12px;padding:12px;text-align:center}.healthCard span{display:block;color:#999;font-size:12px;margin-bottom:6px}.healthCard b{font-size:20px}.auditRow{display:grid;grid-template-columns:150px 120px 1fr;gap:8px;padding:10px 0;border-bottom:1px solid #292929;font-size:12px}@media(max-width:700px){.healthGrid{grid-template-columns:1fr 1fr}.auditRow{grid-template-columns:1fr}}.liveMatchTop{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:rtl;align-items:center;margin:10px 0 8px;text-align:center}
 .liveTeamTop{font-size:16px;font-weight:800;color:#fff;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
-.liveVsTop{display:flex;align-items:center;justify-content:center;width:46px;height:46px;margin:0 auto;border-radius:50%;border:1px solid rgba(255,215,94,.55);background:radial-gradient(circle at center,rgba(255,215,94,.16),rgba(255,215,94,.03));color:#ffd75e;font-size:15px;font-weight:900}
+.liveVsTop{display:flex;align-items:center;justify-content:center;width:46px;height:46px;margin:0 auto;border-radius:50%;border:1px solid rgba(255,77,225,.65);background:radial-gradient(circle at center,rgba(255,77,225,.18),rgba(255,77,225,.04));color:#ff7ae8;font-size:15px;font-weight:900;box-shadow:0 0 14px rgba(255,77,225,.10)}
 .liveMatchLayout .odd .teamName{display:none!important}
 @media(max-width:600px){.liveMatchTop{gap:6px}.liveTeamTop{font-size:12px;padding:0 2px}.liveVsTop{width:38px;height:38px;font-size:13px}}
+.liveTeamTop{display:flex;align-items:center;justify-content:center;gap:7px}.liveTeamMiniLogo{width:28px;height:28px;object-fit:contain;flex:0 0 28px}@media(max-width:600px){.liveTeamMiniLogo{width:22px;height:22px;flex-basis:22px}}
 </style>
 </head>
 <body>
@@ -179,6 +180,15 @@ async function loadBettingAudit(){
 }
 async function openAdmin(){if(adminToken){if(!adminRole&&!(await resolveAdminRole()))return showAdminLogin();applyAdminPermissions();showPage("admin");await showAdminTab("rounds")}else showAdminLogin()}$("#adminNav").onclick=openAdmin;$("#closeAdminLogin").onclick=()=>$("#adminLoginModal").classList.remove("show");$("#adminLoginModal").onclick=e=>{if(e.target.id==="adminLoginModal")$("#adminLoginModal").classList.remove("show")};function toggleTicket(force){const t=$("#ticket"),b=$("#ticketBackdrop"),open=typeof force==="boolean"?force:!t.classList.contains("open");t.classList.toggle("open",open);b.classList.toggle("show",open)}$("#mobileTicketBar").onclick=()=>toggleTicket();$("#ticketBackdrop").onclick=()=>toggleTicket(false);
 function leagueDisplayName(name){const n=String(name||"").trim(),map={"Premier League":"ליגה אנגלית","LaLiga":"ליגה ספרדית","Primera División":"ליגה ספרדית","Serie A":"ליגה איטלקית","Bundesliga":"ליגה גרמנית","Ligue 1":"ליגה צרפתית","UEFA Nations League":"ליגת אומות","UEFA Champions League":"ליגת אלופות","Ligat Ha'al":"ליגת על","Israeli Premier League":"ליגת על","UFC":"UFC"};return map[n]||n||"משחקים נוספים"}
+const LIVE_TEAM_LOGOS={
+"צ'לסי":"https://assets.football-logos.cc/logos/england/256x256/chelsea.ede8a2a7.png",
+"מנצ'סטר יונייטד":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png",
+"מנצ'סטר סיטי":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png",
+"ארסנל":"https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png",
+"מילאן":"https://assets.football-logos.cc/logos/italy/256x256/milan.75d56f90.png",
+"באיירן מינכן":"https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png"
+};
+function liveTeamTopHtml(name){const logo=LIVE_TEAM_LOGOS[String(name||"").trim()];return '<div class="liveTeamTop">'+(logo?'<img class="liveTeamMiniLogo" src="'+esc(logo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<span>'+esc(name)+'</span></div>'}
 function renderPublicGame(g,activeSession,now){
  const started=!!g.starts_at&&new Date(g.starts_at).getTime()<=now,
  finished=!!g.result,
@@ -190,7 +200,7 @@ function renderPublicGame(g,activeSession,now){
  state=finished?'<span class="gameState finished">✅ הסתיים</span>':sessionLocked?'<span class="gameState locked">🔒 הסשן נעול</span>':locked?'<span class="gameState locked">🔒 נעול להימורים</span>':'',
  result=finished?'<div class="gameResult">תוצאה: <b>'+esc(isBallon?(g.result==='1'?'זכה':'לא זכה'):g.result==='1'?g.home_team:g.result==='2'?g.away_team:g.result==='X'?'תיקו':String(g.result))+'</b>'+(score?' · '+esc(score):'')+'</div>':'',
  options=isBallon?[["",g.home_team,g.odd_home,0]]:isUfc?[["",g.home_team,g.odd_home,0],["",g.away_team,g.odd_away,2]]:[["1","",g.odd_home,0],["X","",g.odd_draw,1],["2","",g.odd_away,2]],
- titleBlock=isBallon?'<div class="teams">🏆 '+esc(g.home_team)+'</div>':isUfc?'<div class="teams">'+esc(g.home_team)+' 🆚 '+esc(g.away_team)+'</div>':'<div class="liveMatchTop"><div class="liveTeamTop">'+esc(g.home_team)+'</div><div class="liveVsTop">VS</div><div class="liveTeamTop">'+esc(g.away_team)+'</div></div>';
+ titleBlock=isBallon?'<div class="teams">🏆 '+esc(g.home_team)+'</div>':isUfc?'<div class="teams">'+esc(g.home_team)+' 🆚 '+esc(g.away_team)+'</div>':'<div class="liveMatchTop">'+liveTeamTopHtml(g.home_team)+'<div class="liveVsTop">VS</div>'+liveTeamTopHtml(g.away_team)+'</div>';
  return '<div class="game '+(!isUfc&&!isBallon?'liveMatchLayout ':'')+(locked?'lockedGame':'')+'" data-game-id="'+g.id+'"><div class="small">'+(g.starts_at?fmtDate(g.starts_at):"")+'</div>'+state+titleBlock+'<div class="odds '+(isBallon?'ballonOdds':isUfc?'ufcOdds':'')+'">'+options.map(x=>'<button class="odd" data-j="'+x[3]+'" '+(locked?'disabled':'')+'>'+(x[0]?'<span class="mark">'+x[0]+'</span>':'')+'<span class="teamName">'+esc(x[1])+'</span><b>'+Number(x[2]).toFixed(2)+'</b></button>').join("")+'</div>'+result+'</div>'
 }
 function renderPublicGamesByLeague(list,activeSession,now){if(!list.length)return '<div class="muted">אין משחקים בסשן הזה.</div>';const names=[...new Set(list.map(g=>String(g.league_name||"").trim()).filter(Boolean))];if(names.length<=1)return list.map(g=>renderPublicGame(g,activeSession,now)).join("");const groups=new Map();for(const g of list){const key=String(g.league_name||"").trim()||"משחקים נוספים";if(!groups.has(key))groups.set(key,[]);groups.get(key).push(g)}return [...groups.entries()].map(([league,items])=>'<div class="leagueDivider"><span>'+esc(leagueDisplayName(league))+'</span></div>'+items.map(g=>renderPublicGame(g,activeSession,now)).join("")).join("")}
