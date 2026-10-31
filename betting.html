@@ -515,9 +515,6 @@ async function handleBetShareAction(action){
       await copyBetImageBlob(blob);setMsg("✅ התמונה הועתקה. אפשר להדביק עם Ctrl+V.")
     }else if(action==="save"){
       saveBetImageBlob(blob,b);setMsg("✅ התמונה נשמרה.")
-    }else if(action==="native"){
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"RedBall "+visibleBetCode(b),text:"הטופס שלי ב-RedBall"});setMsg("✅ נפתח תפריט השיתוף.")}
-      else{await copyBetImageBlob(blob);setMsg("המכשיר לא תומך בשיתוף ישיר. התמונה הועתקה במקום.")}
     }else if(action==="whatsapp"){
       const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(mobile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"RedBall "+visibleBetCode(b)});setMsg("בחר WhatsApp מתפריט השיתוף.")}
