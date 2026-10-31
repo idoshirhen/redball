@@ -441,26 +441,52 @@ function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){
 let activeShareBetKey="";
 async function buildBetImageBlob(b){
   const c=document.createElement("canvas");c.width=1080;c.height=1350;const ctx=c.getContext("2d");
-  ctx.fillStyle="#0d0d0d";ctx.fillRect(0,0,c.width,c.height);
-  const grad=ctx.createLinearGradient(0,0,1080,0);grad.addColorStop(0,"#ff4de1");grad.addColorStop(1,"#6ed8ff");ctx.fillStyle=grad;ctx.fillRect(0,0,1080,16);
+  const rr=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}};
+  const picks=Array.isArray(b.picks)?b.picks:[],code=visibleBetCode(b),status=betStatus(b),statusLabel=status?.[0]||"ממתין";
+  const statusColor=b.result_status==="won"?"#62e6a7":b.result_status==="lost"?"#ff6672":b.payment_status==="paid"?"#6ed8ff":"#ffb143";
+
+  const bg=ctx.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,"#08090b");bg.addColorStop(.52,"#111017");bg.addColorStop(1,"#070809");ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+  const glow1=ctx.createRadialGradient(900,100,20,900,100,520);glow1.addColorStop(0,"rgba(255,77,225,.24)");glow1.addColorStop(1,"rgba(255,77,225,0)");ctx.fillStyle=glow1;ctx.fillRect(0,0,1080,620);
+  const glow2=ctx.createRadialGradient(120,360,10,120,360,520);glow2.addColorStop(0,"rgba(110,216,255,.18)");glow2.addColorStop(1,"rgba(110,216,255,0)");ctx.fillStyle=glow2;ctx.fillRect(0,0,700,900);
+
+  const topGrad=ctx.createLinearGradient(80,0,1000,0);topGrad.addColorStop(0,"#6ed8ff");topGrad.addColorStop(.52,"#ffffff");topGrad.addColorStop(1,"#ff4de1");ctx.fillStyle=topGrad;ctx.fillRect(80,54,920,6);
+
   ctx.direction="rtl";ctx.textAlign="right";
-  ctx.fillStyle="#ffffff";ctx.font="900 74px Arial";ctx.fillText("REDBALL",970,105);
-  ctx.fillStyle="#6ed8ff";ctx.font="800 34px Arial";ctx.fillText("טופס "+visibleBetCode(b),970,165);
-  ctx.fillStyle="#aaaaaa";ctx.font="500 27px Arial";ctx.fillText(String(b.player_name||""),970,210);
-  let y=285;const picks=Array.isArray(b.picks)?b.picks:[];
+  ctx.shadowColor="rgba(255,77,225,.45)";ctx.shadowBlur=24;ctx.fillStyle="#ffffff";ctx.font="900 76px Arial";ctx.fillText("RedBall",950,145);ctx.shadowBlur=0;
+  ctx.fillStyle="#8b8d95";ctx.font="700 20px Arial";ctx.fillText("SPORTS BETTING",950,180);
+
+  rr(80,214,920,118,24,"rgba(255,255,255,.045)","rgba(255,255,255,.10)");
+  ctx.fillStyle="#8f9199";ctx.font="600 21px Arial";ctx.fillText("קוד טופס",950,252);
+  ctx.fillStyle="#ffffff";ctx.font="900 39px Arial";ctx.fillText(code,950,298);
+  ctx.textAlign="left";rr(106,240,190,54,27,"rgba(255,255,255,.055)",statusColor);
+  ctx.fillStyle=statusColor;ctx.font="800 22px Arial";ctx.textAlign="center";ctx.fillText(statusLabel,201,275);ctx.textAlign="right";
+
+  ctx.fillStyle="#d8d9dd";ctx.font="700 25px Arial";ctx.fillText(String(b.player_name||""),950,382);
+  ctx.fillStyle="#70727a";ctx.font="500 20px Arial";ctx.fillText(new Date(b.created_at||Date.now()).toLocaleString("he-IL",{dateStyle:"short",timeStyle:"short"}),950,414);
+
+  let y=468;
   picks.forEach((p,i)=>{
-    ctx.fillStyle="#171717";ctx.fillRect(80,y-42,920,126);
-    ctx.strokeStyle="#333333";ctx.strokeRect(80,y-42,920,126);
-    ctx.fillStyle="#ffffff";ctx.font="800 29px Arial";wrapCanvasText(ctx,(i+1)+". "+String(p.g||""),960,y,820,34,1);
-    ctx.fillStyle="#cfcfcf";ctx.font="500 25px Arial";ctx.fillText(String(p.l||""),960,y+42);
-    ctx.fillStyle="#6ed8ff";ctx.font="900 27px Arial";ctx.textAlign="left";ctx.fillText(Number(p.o||0).toFixed(2),115,y+42);ctx.textAlign="right";
-    y+=145
+    rr(80,y,920,126,22,"rgba(20,21,26,.96)","rgba(255,255,255,.09)");
+    rr(92,y+18,54,54,15,"rgba(110,216,255,.10)","rgba(110,216,255,.28)");
+    ctx.fillStyle="#6ed8ff";ctx.font="900 23px Arial";ctx.textAlign="center";ctx.fillText(String(i+1),119,y+53);ctx.textAlign="right";
+    ctx.fillStyle="#ffffff";ctx.font="800 27px Arial";wrapCanvasText(ctx,String(p.g||""),950,y+39,720,31,1);
+    ctx.fillStyle="#a7a9b0";ctx.font="500 22px Arial";wrapCanvasText(ctx,String(p.l||""),950,y+77,690,28,1);
+    ctx.textAlign="left";ctx.fillStyle="#72757d";ctx.font="600 18px Arial";ctx.fillText("יחס",172,y+94);
+    ctx.fillStyle="#ff4de1";ctx.font="900 29px Arial";ctx.fillText(Number(p.o||0).toFixed(2),104,y+94);ctx.textAlign="right";
+    y+=142;
   });
-  y=Math.max(y+20,1010);ctx.fillStyle="#151515";ctx.fillRect(80,y,920,205);ctx.strokeStyle="#343434";ctx.strokeRect(80,y,920,205);
-  ctx.fillStyle="#aaaaaa";ctx.font="600 25px Arial";ctx.fillText("סכום",940,y+45);ctx.fillText("יחס כולל",940,y+100);ctx.fillText("זכייה אפשרית",940,y+155);
-  ctx.fillStyle="#ffffff";ctx.font="900 31px Arial";ctx.textAlign="left";ctx.fillText(money(b.stake||0),120,y+45);ctx.fillText(Number(b.total_odd||0).toFixed(2),120,y+100);
-  ctx.fillStyle="#6ed8ff";ctx.fillText(money(b.potential_win||0),120,y+155);ctx.textAlign="right";
-  ctx.fillStyle="#777";ctx.font="500 20px Arial";ctx.fillText("RedBall • "+new Date(b.created_at||Date.now()).toLocaleDateString("he-IL"),970,1310);
+
+  const summaryY=Math.max(y+18,1020);
+  rr(80,summaryY,920,222,26,"rgba(15,16,20,.98)","rgba(255,255,255,.11)");
+  ctx.fillStyle="#7d8088";ctx.font="700 19px Arial";ctx.textAlign="center";
+  ctx.fillText("סכום",850,summaryY+48);ctx.fillText("יחס כולל",540,summaryY+48);ctx.fillText("זכייה אפשרית",230,summaryY+48);
+  ctx.fillStyle="#ffffff";ctx.font="900 35px Arial";
+  ctx.fillText("₪"+money(b.stake||0),850,summaryY+96);ctx.fillText(Number(b.total_odd||0).toFixed(2),540,summaryY+96);
+  ctx.shadowColor="rgba(110,216,255,.55)";ctx.shadowBlur=18;ctx.fillStyle="#6ed8ff";ctx.font="900 39px Arial";ctx.fillText("₪"+money(b.potential_win||0),230,summaryY+96);ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.08)";ctx.beginPath();ctx.moveTo(120,summaryY+132);ctx.lineTo(960,summaryY+132);ctx.stroke();
+  ctx.fillStyle="#777a82";ctx.font="500 18px Arial";ctx.fillText("שחקו באחריות • הטופס כפוף לתוצאות המערכת",540,summaryY+173);
+
+  ctx.fillStyle="#4f5158";ctx.font="600 17px Arial";ctx.textAlign="center";ctx.fillText("RedBall • BET SMART • PLAY RESPONSIBLY",540,1310);
   return await new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error("לא ניתן ליצור תמונה")),"image/png",.95))
 }
 function openBetShare(key){
@@ -699,7 +725,6 @@ ticket();load();
       <button class="shareAction" type="button" data-share-action="save" onclick="handleBetShareAction('save')">💾 שמור למחשב</button>
       <button class="shareAction" type="button" data-share-action="whatsapp" onclick="handleBetShareAction('whatsapp')">💬 WhatsApp</button>
       <button class="shareAction" type="button" data-share-action="discord" onclick="handleBetShareAction('discord')">🎮 Discord</button>
-      <button class="shareAction primaryShare" type="button" data-share-action="native" onclick="handleBetShareAction('native')">📱 שתף באפליקציה</button>
     </div>
     <div id="shareSheetMsg" class="shareSheetMsg"></div>
   </div>
