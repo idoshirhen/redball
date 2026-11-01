@@ -440,53 +440,63 @@ function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){
 }
 let activeShareBetKey="";
 async function buildBetImageBlob(b){
+  try{if(document.fonts?.load){await Promise.all([document.fonts.load('800 76px "Rubik"'),document.fonts.load('700 28px "Rubik"'),document.fonts.ready])}}catch(e){}
   const c=document.createElement("canvas");c.width=1080;c.height=1350;const ctx=c.getContext("2d");
-  const rr=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}};
+  const rr=(x,y,w,h,r,fill,stroke,lw=2)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}};
+  const line=(x1,y1,x2,y2,color,w=1)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=w;ctx.stroke()};
   const picks=Array.isArray(b.picks)?b.picks:[],code=visibleBetCode(b),status=betStatus(b),statusLabel=status?.[0]||"ממתין";
   const statusColor=b.result_status==="won"?"#62e6a7":b.result_status==="lost"?"#ff6672":b.payment_status==="paid"?"#6ed8ff":"#ffb143";
 
-  const bg=ctx.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,"#08090b");bg.addColorStop(.52,"#111017");bg.addColorStop(1,"#070809");ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
-  const glow1=ctx.createRadialGradient(900,100,20,900,100,520);glow1.addColorStop(0,"rgba(255,77,225,.24)");glow1.addColorStop(1,"rgba(255,77,225,0)");ctx.fillStyle=glow1;ctx.fillRect(0,0,1080,620);
-  const glow2=ctx.createRadialGradient(120,360,10,120,360,520);glow2.addColorStop(0,"rgba(110,216,255,.18)");glow2.addColorStop(1,"rgba(110,216,255,0)");ctx.fillStyle=glow2;ctx.fillRect(0,0,700,900);
+  const bg=ctx.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,"#08090c");bg.addColorStop(.46,"#111019");bg.addColorStop(1,"#07080a");ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+  const glowPink=ctx.createRadialGradient(930,120,10,930,120,520);glowPink.addColorStop(0,"rgba(255,77,225,.28)");glowPink.addColorStop(1,"rgba(255,77,225,0)");ctx.fillStyle=glowPink;ctx.fillRect(0,0,1080,620);
+  const glowBlue=ctx.createRadialGradient(90,350,10,90,350,520);glowBlue.addColorStop(0,"rgba(110,216,255,.22)");glowBlue.addColorStop(1,"rgba(110,216,255,0)");ctx.fillStyle=glowBlue;ctx.fillRect(0,0,720,900);
 
-  const topGrad=ctx.createLinearGradient(80,0,1000,0);topGrad.addColorStop(0,"#6ed8ff");topGrad.addColorStop(.52,"#ffffff");topGrad.addColorStop(1,"#ff4de1");ctx.fillStyle=topGrad;ctx.fillRect(80,54,920,6);
+  const topGrad=ctx.createLinearGradient(80,0,1000,0);topGrad.addColorStop(0,"#6ed8ff");topGrad.addColorStop(.5,"#ffffff");topGrad.addColorStop(1,"#ff4de1");ctx.fillStyle=topGrad;ctx.fillRect(80,54,920,6);
 
   ctx.direction="rtl";ctx.textAlign="right";
-  ctx.shadowColor="rgba(255,77,225,.45)";ctx.shadowBlur=24;ctx.fillStyle="#ffffff";ctx.font="900 76px Arial";ctx.fillText("RedBall",950,145);ctx.shadowBlur=0;
-  ctx.fillStyle="#8b8d95";ctx.font="700 20px Arial";ctx.fillText("SPORTS BETTING",950,180);
+  ctx.shadowColor="rgba(255,77,225,.42)";ctx.shadowBlur=24;ctx.fillStyle="#ffffff";ctx.font='800 78px "Rubik",Arial,sans-serif';ctx.fillText("RedBall",950,145);ctx.shadowBlur=0;
+  ctx.fillStyle="#9a9da6";ctx.font='600 23px "Rubik",Arial,sans-serif';ctx.fillText("שיתוף טופס",950,184);
 
-  rr(80,214,920,118,24,"rgba(255,255,255,.045)","rgba(255,255,255,.10)");
-  ctx.fillStyle="#8f9199";ctx.font="600 21px Arial";ctx.fillText("קוד טופס",950,252);
-  ctx.fillStyle="#ffffff";ctx.font="900 39px Arial";ctx.fillText(code,950,298);
-  ctx.textAlign="left";rr(106,240,190,54,27,"rgba(255,255,255,.055)",statusColor);
-  ctx.fillStyle=statusColor;ctx.font="800 22px Arial";ctx.textAlign="center";ctx.fillText(statusLabel,201,275);ctx.textAlign="right";
+  rr(80,216,920,126,26,"rgba(255,255,255,.048)","rgba(255,255,255,.11)");
+  ctx.fillStyle="#8f929b";ctx.font='600 21px "Rubik",Arial,sans-serif';ctx.fillText("קוד טופס",950,258);
+  ctx.fillStyle="#ffffff";ctx.font='800 40px "Rubik",Arial,sans-serif';ctx.fillText(code,950,307);
 
-  ctx.fillStyle="#d8d9dd";ctx.font="700 25px Arial";ctx.fillText(String(b.player_name||""),950,382);
-  ctx.fillStyle="#70727a";ctx.font="500 20px Arial";ctx.fillText(new Date(b.created_at||Date.now()).toLocaleString("he-IL",{dateStyle:"short",timeStyle:"short"}),950,414);
+  rr(104,244,192,54,27,"rgba(255,255,255,.045)",statusColor,2);
+  ctx.textAlign="center";ctx.fillStyle=statusColor;ctx.font='700 21px "Rubik",Arial,sans-serif';ctx.fillText(statusLabel,200,279);ctx.textAlign="right";
 
-  let y=468;
+  ctx.fillStyle="#d8d9df";ctx.font='700 26px "Rubik",Arial,sans-serif';ctx.fillText(String(b.player_name||""),950,398);
+  ctx.fillStyle="#747781";ctx.font='500 19px "Rubik",Arial,sans-serif';ctx.fillText(new Date(b.created_at||Date.now()).toLocaleString("he-IL",{dateStyle:"short",timeStyle:"short"}),950,430);
+
+  let y=472;
   picks.forEach((p,i)=>{
-    rr(80,y,920,126,22,"rgba(20,21,26,.96)","rgba(255,255,255,.09)");
-    rr(910,y+18,54,54,15,"rgba(110,216,255,.10)","rgba(110,216,255,.28)");
-    ctx.fillStyle="#6ed8ff";ctx.font="900 23px Arial";ctx.textAlign="center";ctx.fillText(String(i+1),937,y+53);ctx.textAlign="right";
-    ctx.fillStyle="#ffffff";ctx.font="800 27px Arial";wrapCanvasText(ctx,String(p.g||""),885,y+39,650,31,1);
-    ctx.fillStyle="#a7a9b0";ctx.font="500 22px Arial";wrapCanvasText(ctx,String(p.l||""),885,y+77,620,28,1);
-    ctx.textAlign="left";ctx.fillStyle="#72757d";ctx.font="600 18px Arial";ctx.fillText("יחס",172,y+94);
-    ctx.fillStyle="#ff4de1";ctx.font="900 29px Arial";ctx.fillText(Number(p.o||0).toFixed(2),104,y+94);ctx.textAlign="right";
-    y+=142;
+    rr(80,y,920,128,24,"rgba(17,18,24,.96)","rgba(255,255,255,.09)");
+    rr(912,y+18,56,56,16,"rgba(110,216,255,.10)","rgba(110,216,255,.28)");
+    ctx.textAlign="center";ctx.fillStyle="#6ed8ff";ctx.font='800 24px "Rubik",Arial,sans-serif';ctx.fillText(String(i+1),940,y+54);ctx.textAlign="right";
+
+    ctx.fillStyle="#ffffff";ctx.font='700 28px "Rubik",Arial,sans-serif';wrapCanvasText(ctx,String(p.g||""),885,y+42,635,32,1);
+    ctx.fillStyle="#aaadb5";ctx.font='500 22px "Rubik",Arial,sans-serif';wrapCanvasText(ctx,String(p.l||""),885,y+81,610,28,1);
+
+    rr(105,y+24,132,78,19,"rgba(255,77,225,.07)","rgba(255,77,225,.22)");
+    ctx.textAlign="center";ctx.fillStyle="#8e919a";ctx.font='600 17px "Rubik",Arial,sans-serif';ctx.fillText("יחס",171,y+51);
+    ctx.fillStyle="#ff4de1";ctx.font='800 31px "Rubik",Arial,sans-serif';ctx.fillText(Number(p.o||0).toFixed(2),171,y+88);ctx.textAlign="right";
+    y+=143;
   });
 
-  const summaryY=Math.max(y+18,1020);
-  rr(80,summaryY,920,222,26,"rgba(15,16,20,.98)","rgba(255,255,255,.11)");
-  ctx.fillStyle="#7d8088";ctx.font="700 19px Arial";ctx.textAlign="center";
-  ctx.fillText("סכום ההימור",850,summaryY+48);ctx.fillText("יחס כולל",540,summaryY+48);ctx.fillText("זכייה אפשרית",230,summaryY+48);
-  ctx.fillStyle="#ffffff";ctx.font="900 35px Arial";
-  ctx.fillText("₪"+money(b.stake||0),850,summaryY+96);ctx.fillText(Number(b.total_odd||0).toFixed(2),540,summaryY+96);
-  ctx.shadowColor="rgba(110,216,255,.55)";ctx.shadowBlur=18;ctx.fillStyle="#6ed8ff";ctx.font="900 39px Arial";ctx.fillText("₪"+money(b.potential_win||0),230,summaryY+96);ctx.shadowBlur=0;
-  ctx.strokeStyle="rgba(255,255,255,.08)";ctx.beginPath();ctx.moveTo(120,summaryY+132);ctx.lineTo(960,summaryY+132);ctx.stroke();
-  ctx.fillStyle="#777a82";ctx.font="500 18px Arial";ctx.fillText("שחקו באחריות • הטופס כפוף לתוצאות המערכת",540,summaryY+173);
+  const summaryY=Math.max(y+20,1026);
+  rr(80,summaryY,920,190,28,"rgba(14,15,20,.98)","rgba(255,255,255,.11)");
+  line(387,summaryY+28,387,summaryY+162,"rgba(255,255,255,.07)");
+  line(694,summaryY+28,694,summaryY+162,"rgba(255,255,255,.07)");
 
-  ctx.fillStyle="#4f5158";ctx.font="600 17px Arial";ctx.textAlign="center";ctx.fillText("RedBall • BET SMART • PLAY RESPONSIBLY",540,1310);
+  const xs=[850,540,230];
+  ctx.textAlign="center";ctx.fillStyle="#80838c";ctx.font='600 19px "Rubik",Arial,sans-serif';
+  ctx.fillText("סכום ההימור",xs[0],summaryY+48);ctx.fillText("יחס כולל",xs[1],summaryY+48);ctx.fillText("זכייה אפשרית",xs[2],summaryY+48);
+
+  ctx.fillStyle="#ffffff";ctx.font='800 35px "Rubik",Arial,sans-serif';
+  ctx.fillText("₪"+money(b.stake||0),xs[0],summaryY+102);ctx.fillText(Number(b.total_odd||0).toFixed(2),xs[1],summaryY+102);
+  ctx.shadowColor="rgba(110,216,255,.52)";ctx.shadowBlur=18;ctx.fillStyle="#6ed8ff";ctx.font='800 40px "Rubik",Arial,sans-serif';ctx.fillText("₪"+money(b.potential_win||0),xs[2],summaryY+102);ctx.shadowBlur=0;
+
+  ctx.fillStyle="#343741";ctx.beginPath();ctx.arc(540,1304,3,0,Math.PI*2);ctx.fill();
+
   return await new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error("לא ניתן ליצור תמונה")),"image/png",.95))
 }
 function openBetShare(key){
