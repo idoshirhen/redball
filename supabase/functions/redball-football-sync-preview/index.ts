@@ -36,6 +36,30 @@ Object.assign(teams,{
 'מונאקו':{country:'FRA',aliases:['Monaco','AS Monaco']}
 })
 
+
+Object.assign(teams,{
+'המבורג':{country:'DEU',aliases:['Hamburger SV','Hamburg','HSV']},
+'איינטרכט פרנקפורט':{country:'DEU',aliases:['Eintracht Frankfurt','Frankfurt']},
+'דורטמונד':{country:'DEU',aliases:['Borussia Dortmund','Dortmund']},
+'ורדר ברמן':{country:'DEU',aliases:['Werder Bremen','SV Werder Bremen','Werder']},
+'פרייבורג':{country:'DEU',aliases:['SC Freiburg','Freiburg']},
+'וולפסבורג':{country:'DEU',aliases:['VfL Wolfsburg','Wolfsburg']},
+'מילאן':{country:'ITA',aliases:['AC Milan','Milan']},
+'בולוניה':{country:'ITA',aliases:['Bologna','Bologna FC','Bologna FC 1909']},
+"מנצ'סטר סיטי":{country:'ENG',aliases:['Manchester City','Man City']},
+'ברייטון':{country:'ENG',aliases:['Brighton','Brighton & Hove Albion','Brighton and Hove Albion']},
+'בורנמות\'':{country:'ENG',aliases:['AFC Bournemouth','Bournemouth']},
+'אסטון וילה':{country:'ENG',aliases:['Aston Villa']},
+'פולהאם':{country:'ENG',aliases:['Fulham','Fulham FC']},
+'קריסטל פאלאס':{country:'ENG',aliases:['Crystal Palace','Crystal Palace FC']},
+'ליברפול':{country:'ENG',aliases:['Liverpool','Liverpool FC']},
+'צ\'לסי':{country:'ENG',aliases:['Chelsea','Chelsea FC']},
+'פיורנטינה':{country:'ITA',aliases:['Fiorentina','ACF Fiorentina']},
+'אטאלנטה':{country:'ITA',aliases:['Atalanta','Atalanta BC']},
+'אברטון':{country:'ENG',aliases:['Everton','Everton FC']},
+'ניוקאסל':{country:'ENG',aliases:['Newcastle United','Newcastle','Newcastle United FC']}
+})
+
 const nationalTeams:Record<string,{country:string,aliases:string[]}>={
 'ישראל':{country:'ISR',aliases:['Israel']},'ספרד':{country:'ESP',aliases:['Spain']},'צרפת':{country:'FRA',aliases:['France']},'גרמניה':{country:'DEU',aliases:['Germany']},'איטליה':{country:'ITA',aliases:['Italy']},'אנגליה':{country:'ENG',aliases:['England']},'פורטוגל':{country:'PRT',aliases:['Portugal']},'הולנד':{country:'NLD',aliases:['Netherlands']},'בלגיה':{country:'BEL',aliases:['Belgium']},'קרואטיה':{country:'HRV',aliases:['Croatia']},'דנמרק':{country:'DNK',aliases:['Denmark']},'שוויץ':{country:'CHE',aliases:['Switzerland']},'אוסטריה':{country:'AUT',aliases:['Austria']},'נורווגיה':{country:'NOR',aliases:['Norway']},'שוודיה':{country:'SWE',aliases:['Sweden']},'פולין':{country:'POL',aliases:['Poland']},'יוון':{country:'GRC',aliases:['Greece']},'טורקיה':{country:'TUR',aliases:['Turkey','Türkiye']},'סרביה':{country:'SRB',aliases:['Serbia']},'אוקראינה':{country:'UKR',aliases:['Ukraine']},'צכיה':{country:'CZE',aliases:['Czech Republic','Czechia']},'אירלנד':{country:'IRL',aliases:['Republic of Ireland','Ireland']},'סקוטלנד':{country:'SCO',aliases:['Scotland']},'ויילס':{country:'WAL',aliases:['Wales']},'ארגנטינה':{country:'ARG',aliases:['Argentina']},'ברזיל':{country:'BRA',aliases:['Brazil']},'אורוגוואי':{country:'URY',aliases:['Uruguay']},'קולומביה':{country:'COL',aliases:['Colombia']},'ארה"ב':{country:'USA',aliases:['USA','United States']},'מקסיקו':{country:'MEX',aliases:['Mexico']},'יפן':{country:'JPN',aliases:['Japan']},'דרום קוריאה':{country:'KOR',aliases:['Korea Republic','South Korea']},'מרוקו':{country:'MAR',aliases:['Morocco']},'מצרים':{country:'EGY',aliases:['Egypt']},'ניגריה':{country:'NGA',aliases:['Nigeria']},'גאנה':{country:'GHA',aliases:['Ghana']},'סלובניה':{country:'SVN',aliases:['Slovenia']},'צפון מקדוניה':{country:'MKD',aliases:['North Macedonia','North Macedonia FYR','FYR Macedonia']},'אלבניה':{country:'ALB',aliases:['Albania']},'סן מרינו':{country:'SMR',aliases:['San Marino']},'בלארוס':{country:'BLR',aliases:['Belarus']},'פינלנד':{country:'FIN',aliases:['Finland']},'קזחסטן':{country:'KAZ',aliases:['Kazakhstan']},'איי פארו':{country:'FRO',aliases:['Faroe Islands','Faroe Islands']},'מולדובה':{country:'MDA',aliases:['Moldova']},'סלובקיה':{country:'SVK',aliases:['Slovakia']},'אסטוניה':{country:'EST',aliases:['Estonia']},'איסלנד':{country:'ISL',aliases:['Iceland']},'לוקסמבורג':{country:'LUX',aliases:['Luxembourg']},'בולגריה':{country:'BGR',aliases:['Bulgaria']}
 }
@@ -43,7 +67,7 @@ const nationalTeams:Record<string,{country:string,aliases:string[]}>={
 const normName=(v:string)=>String(v||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g,' ').replace(/\b(fc|cf|fk|sc|afc|ac|ssc|sv|vfb|spvgg|kv)\b/g,' ').replace(/\s+/g,' ').trim()
 const aliasesFor=(name:string)=>[name,...(teams[name]?.aliases||[]),...(nationalTeams[name]?.aliases||[])].map(normName).filter(Boolean)
 const nameScore=(wanted:string,actual:string)=>{const a=normName(actual);let best=0;for(const w of aliasesFor(wanted)){if(w===a)best=Math.max(best,3);else if(a.includes(w)||w.includes(a))best=Math.max(best,2);else{const wt=new Set(w.split(' ')),at=new Set(a.split(' '));let common=0;wt.forEach(x=>{if(x&&at.has(x))common++});if(common>=2)best=Math.max(best,1)}}return best}
-function findFixture(home:string,away:string,starts:Date,fixtures:any[]){const timed=(fixtures||[]).filter((x:any)=>{const d=x?.fixture?.date?new Date(x.fixture.date):null;return d&&!Number.isNaN(d.getTime())&&Math.abs(d.getTime()-starts.getTime())<=30*60*1000});const ranked=timed.map((x:any)=>({x,hs:nameScore(home,x?.teams?.home?.name||''),as:nameScore(away,x?.teams?.away?.name||''),dt:Math.abs(new Date(x.fixture.date).getTime()-starts.getTime())})).sort((a:any,b:any)=>(b.hs+b.as)-(a.hs+a.as)||a.dt-b.dt);const best=ranked[0];if(best&&best.hs>=2&&best.as>=2)return best.x;if(timed.length===1&&best&&best.dt<=2*60*1000&&(best.hs>=2||best.as>=2))return best.x;return null}
+function findFixture(home:string,away:string,starts:Date,fixtures:any[]){const ranked=(fixtures||[]).map((x:any)=>{const d=x?.fixture?.date?new Date(x.fixture.date):null;return{x,d,hs:nameScore(home,x?.teams?.home?.name||''),as:nameScore(away,x?.teams?.away?.name||''),dt:d&&!Number.isNaN(d.getTime())?Math.abs(d.getTime()-starts.getTime()):Number.POSITIVE_INFINITY}}).filter((r:any)=>r.d&&Number.isFinite(r.dt)).sort((a:any,b:any)=>(b.hs+b.as)-(a.hs+a.as)||a.dt-b.dt);const strong=ranked.filter((r:any)=>r.hs>=2&&r.as>=2);if(strong.length)return strong[0].x;const timed=ranked.filter((r:any)=>r.dt<=30*60*1000),best=timed[0];if(timed.length===1&&best&&best.dt<=2*60*1000&&(best.hs>=2||best.as>=2))return best.x;return null}
 Deno.serve(async(req)=>{
  if(req.method==='OPTIONS') return new Response('ok',{headers:cors})
  if(req.method!=='GET'&&req.method!=='POST') return json({error:'Method not allowed'},405)
@@ -135,8 +159,10 @@ Deno.serve(async(req)=>{
     for(const g of linkCandidates.filter((x:any)=>localDate(x.starts_at)===linkDate)){
       const fx=findFixture(g.home_team,g.away_team,new Date(g.starts_at),fixtures);if(!fx)continue
       const fid=Number(fx.fixture?.id);if(!fid)continue
-      const {error:ue}=await s.from('betting_games').update({api_provider:'api-football',api_fixture_id:fid,api_link_status:'verified',api_home_name:fx.teams?.home?.name||null,api_away_name:fx.teams?.away?.name||null,api_status:String(fx.fixture?.status?.short||'NS'),league_name:fx.league?.name||null,verification_note:g.elo_status==='verified'?'Elo מאומת + API-Football מאומתים':'API-Football מאומת; ממתין ל-Elo'}).eq('id',g.id)
-      if(!ue)linked.push({id:g.id,home_team:g.home_team,away_team:g.away_team,fixture_id:fid})
+      const canonicalStart=fx.fixture?.date?new Date(fx.fixture.date).toISOString():g.starts_at
+      const originalStart=new Date(g.starts_at).getTime(),canonicalMs=new Date(canonicalStart).getTime(),timeCorrected=Number.isFinite(originalStart)&&Number.isFinite(canonicalMs)&&Math.abs(originalStart-canonicalMs)>60*1000
+      const {error:ue}=await s.from('betting_games').update({starts_at:canonicalStart,api_provider:'api-football',api_fixture_id:fid,api_link_status:'verified',api_home_name:fx.teams?.home?.name||null,api_away_name:fx.teams?.away?.name||null,api_status:String(fx.fixture?.status?.short||'NS'),league_name:fx.league?.name||null,verification_note:(g.elo_status==='verified'?'Elo מאומת + API-Football מאומתים':'API-Football מאומת; ממתין ל-Elo')+(timeCorrected?' | שעת פתיחה תוקנה אוטומטית לפי API-Football':'')}).eq('id',g.id)
+      if(!ue)linked.push({id:g.id,home_team:g.home_team,away_team:g.away_team,fixture_id:fid,time_corrected:timeCorrected,starts_at:canonicalStart})
     }
   }
   // Fallback for Israeli Premier League final results when API-Football is unavailable/suspended.
