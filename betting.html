@@ -525,11 +525,19 @@ async function handleBetShareAction(action){
     }else if(action==="whatsapp"){
       const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(mobile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"RedBall "+visibleBetCode(b)});setMsg("בחר WhatsApp מתפריט השיתוף.")}
-      else{await copyBetImageBlob(blob);window.open("https://web.whatsapp.com/","_blank");setMsg("✅ התמונה הועתקה. ב-WhatsApp לחץ Ctrl+V בצ'אט.")}
+      else{
+        await copyBetImageBlob(blob);
+        window.location.href="whatsapp://send";
+        setMsg("✅ התמונה הועתקה. WhatsApp נפתח — בחר צ'אט ולחץ Ctrl+V.")
+      }
     }else if(action==="discord"){
       const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(mobile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"RedBall "+visibleBetCode(b)});setMsg("בחר Discord מתפריט השיתוף.")}
-      else{await copyBetImageBlob(blob);window.open("https://discord.com/channels/@me","_blank");setMsg("✅ התמונה הועתקה. ב-Discord לחץ Ctrl+V בצ'אט.")}
+      else{
+        await copyBetImageBlob(blob);
+        window.location.href="discord://-/channels/@me";
+        setMsg("✅ התמונה הועתקה. Discord נפתח — בחר צ'אט ולחץ Ctrl+V.")
+      }
     }
   }catch(e){
     if(e?.name!=="AbortError")setMsg(e?.message||"לא ניתן לבצע את הפעולה כרגע.",false)
