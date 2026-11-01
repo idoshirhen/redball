@@ -544,8 +544,51 @@ async function handleBetShareAction(action){
   }
 }
 function myBetCard(b){const st=betStatus(b),picks=Array.isArray(b.picks)?b.picks:[],code=visibleBetCode(b),shareKey=String(b.id||b.bet_code||code);shareBetCache.set(shareKey,b);return '<article class="myBet"><div class="myBetTop"><div><div class="betCodeRow"><div class="betCode">'+esc(code)+'</div><button class="copyCodeBtn" type="button" data-code="'+esc(code)+'" onclick="copyBetCode(this)">📋 העתק קוד</button><button class="shareBetBtn" type="button" data-share-key="'+esc(shareKey)+'" onclick="openBetShare(\''+esc(shareKey)+'\')">📤 שיתוף</button></div><div class="small">'+fmtDate(b.created_at)+' • '+esc(b.player_name)+'</div></div><div style="display:flex;align-items:center;gap:6px"><span class="betStatus '+st[1]+'">'+st[0]+'</span><button class="removeMyBetBtn" type="button" title="הסר מהרשימה" aria-label="הסר מהרשימה" onclick="removeMyBet(\''+esc(b.bet_code)+'\',this)">🗑️</button></div></div><div>'+picks.map(p=>'<div class="myPick myPickWithOutcome">'+pickOutcomeIcon(p)+'<div class="myPickText"><b>'+esc(p.g||"")+'</b><br>'+esc(p.l||"")+' • יחס '+Number(p.o||0).toFixed(2)+'</div></div>').join("")+'</div><div class="betMeta"><div>סכום ההימור<b>'+money(b.stake)+'</b></div><div>יחס כולל<b>'+Number(b.total_odd).toFixed(2)+'</b></div><div>זכייה אפשרית<b>'+money(b.potential_win)+'</b></div></div></article>'}
+let pendingPaymentReminderTimer=null,pendingPaymentReminderBusy=false;
+const PENDING_PAYMENT_FIRST_MS=10*60*1000;
+const PENDING_PAYMENT_REPEAT_MS=15*60*1000;
+function pendingPaymentReminderKey(b){return "redball_pending_payment_reminder_"+String(b.id||b.bet_code||"")}
+function schedulePendingPaymentReminder(rows){
+  clearTimeout(pendingPaymentReminderTimer);
+  const pending=(Array.isArray(rows)?rows:[]).filter(b=>b&&b.payment_status!=="paid"&&b.result_status!=="cancelled"&&b.created_at);
+  if(!pending.length)return;
+  const now=Date.now();
+  let nextAt=Infinity,target=null;
+  for(const b of pending){
+    const created=new Date(b.created_at).getTime();if(!Number.isFinite(created))continue;
+    const firstDue=created+PENDING_PAYMENT_FIRST_MS;
+    const lastShown=Number(localStorage.getItem(pendingPaymentReminderKey(b))||0);
+    const due=lastShown?Math.max(firstDue,lastShown+PENDING_PAYMENT_REPEAT_MS):firstDue;
+    if(due<nextAt){nextAt=due;target=b}
+  }
+  if(!target)return;
+  pendingPaymentReminderTimer=setTimeout(()=>showPendingPaymentReminder(target),Math.max(250,nextAt-now));
+}
+async function showPendingPaymentReminder(b){
+  if(pendingPaymentReminderBusy)return;
+  if(document.hidden){pendingPaymentReminderTimer=setTimeout(()=>showPendingPaymentReminder(b),30000);return}
+  const existing=document.getElementById("siteModal");
+  if(existing?.classList.contains("show")){pendingPaymentReminderTimer=setTimeout(()=>showPendingPaymentReminder(b),30000);return}
+  try{
+    const latest=await fetchImportedBet(visibleBetCode(b));
+    if(!latest||latest.payment_status==="paid"||latest.result_status==="cancelled"){schedulePendingPaymentReminder([]);return}
+    pendingPaymentReminderBusy=true;
+    localStorage.setItem(pendingPaymentReminderKey(latest),String(Date.now()));
+    const code=visibleBetCode(latest);
+    await siteAlert(
+      "הטופס "+code+" עדיין ממתין לאישור ותשלום.\n\nכדי שהטופס יהיה פעיל, יש לשלם פיזית בעסק במיקום 309.\nאל תחכו לרגע האחרון לפני תחילת המשחקים.",
+      "⏰ תזכורת לתשלום"
+    );
+  }catch(e){
+    console.warn("Pending payment reminder check failed",e);
+  }finally{
+    pendingPaymentReminderBusy=false;
+    try{await loadMyBets()}catch(e){}
+  }
+}
+
 let lastMyBetsSignature="";
-function renderMyBets(rows){const box=$("#myBets");shareBetCache.clear();if(!rows.length){lastMyBetsSignature="";box.innerHTML='<div style="text-align:center;padding:30px 10px"><div style="font-size:34px">🎫</div><h3>עדיין אין הימורים שמורים</h3><div class="muted">שלח הימור או חפש טיקט לפי הקוד שלו.</div></div>';return}const signature=JSON.stringify(rows.map(b=>[b.id,b.short_code,b.bet_code,b.payment_status,b.result_status,b.total_odd,b.potential_win,b.picks]));if(signature!==lastMyBetsSignature){box.innerHTML=rows.map(myBetCard).join("");lastMyBetsSignature=signature}else{rows.forEach(b=>shareBetCache.set(String(b.id||b.bet_code||visibleBetCode(b)),b))}const won=rows.find(b=>b.result_status==="won");if(won)setTimeout(()=>celebrateWinOnce(won),120)}
+function renderMyBets(rows){const box=$("#myBets");shareBetCache.clear();schedulePendingPaymentReminder(rows);if(!rows.length){lastMyBetsSignature="";box.innerHTML='<div style="text-align:center;padding:30px 10px"><div style="font-size:34px">🎫</div><h3>עדיין אין הימורים שמורים</h3><div class="muted">שלח הימור או חפש טיקט לפי הקוד שלו.</div></div>';return}const signature=JSON.stringify(rows.map(b=>[b.id,b.short_code,b.bet_code,b.payment_status,b.result_status,b.total_odd,b.potential_win,b.picks]));if(signature!==lastMyBetsSignature){box.innerHTML=rows.map(myBetCard).join("");lastMyBetsSignature=signature}else{rows.forEach(b=>shareBetCache.set(String(b.id||b.bet_code||visibleBetCode(b)),b))}const won=rows.find(b=>b.result_status==="won");if(won)setTimeout(()=>celebrateWinOnce(won),120)}
 async function fetchImportedBet(code){const d=await publicReq("lookup_ticket",{code});return d.bet||null}
 async function loadMyBets(){const box=$("#myBets"),hasExistingBet=!!box.querySelector(".myBet");if(!hasExistingBet)box.innerHTML='<div class="muted">טוען את ההימורים שלך...</div>';const hiddenCodes=new Set(getHiddenTicketCodes());const {data,error}=await db.from("bets").select("id,bet_code,short_code,created_at,player_name,stake,total_odd,potential_win,picks,payment_status,result_status,paid_at,paid_by").neq("result_status","cancelled").order("created_at",{ascending:false}).limit(100);if(error){box.innerHTML='<div class="statusMsg error">לא ניתן לטעון את ההימורים: '+esc(error.message)+'</div>';return}const byId=new Map((data||[]).filter(b=>b.result_status!=="cancelled"&&!hiddenCodes.has(String(b.bet_code||"").toUpperCase())).map(b=>[b.id,b]));const renderNow=()=>renderMyBets([...byId.values()].filter(b=>b.result_status!=="cancelled").sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)));renderNow();const existingCodes=new Set([...byId.values()].map(b=>String(b.bet_code||'').toUpperCase()));const savedCodes=getSavedTicketCodes(),missingCodes=savedCodes.filter(code=>!existingCodes.has(String(code).toUpperCase()));if(!missingCodes.length)return;const batch=missingCodes.slice(0,3),results=await Promise.allSettled(batch.map(code=>fetchImportedBet(code)));let changed=false;const removeCodes=new Set();results.forEach((r,i)=>{if(r.status!=="fulfilled")return;const b=r.value;if(!b||b.result_status==="cancelled"){removeCodes.add(batch[i]);return}byId.set(b.id,b);changed=true});if(removeCodes.size)localStorage.setItem("redball_saved_ticket_codes",JSON.stringify(savedCodes.filter(code=>!removeCodes.has(code))));if(changed)renderNow()}
 async function searchTicket(){const input=$("#ticketSearchInput"),msg=$("#ticketSearchMsg"),btn=$("#ticketSearchBtn"),resultBox=$("#ticketSearchResult"),code=(input.value||"").trim().toUpperCase();msg.textContent="";msg.className="statusMsg searchMsg";resultBox.innerHTML="";if(!code){msg.textContent="הכנס קוד טיקט לחיפוש.";msg.className="statusMsg error searchMsg";return}btn.disabled=true;btn.textContent="מחפש...";try{const bet=await fetchImportedBet(code);if(!bet){msg.textContent="לא נמצא טיקט עם הקוד הזה במאגר.";msg.className="statusMsg error searchMsg";return}input.value=visibleBetCode(bet);msg.textContent="✅ הטיקט נמצא במאגר.";msg.className="statusMsg success searchMsg";resultBox.innerHTML='<div class="small" style="margin:10px 2px 0;color:#6ed8ff;font-weight:700">תוצאת חיפוש</div>'+myBetCard(bet);if(bet.result_status!=="cancelled")saveTicketCode(visibleBetCode(bet))}catch(e){msg.textContent=e.message||"לא ניתן לבצע את החיפוש כרגע.";msg.className="statusMsg error searchMsg"}finally{btn.disabled=false;btn.textContent="🔎 חפש"}}
