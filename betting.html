@@ -770,7 +770,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)schedulePu
 window.addEventListener("focus",()=>schedulePublicRefresh(0));
 window.addEventListener("online",()=>schedulePublicRefresh(0));
 
-ticket();load();
+ticket();load();if(getSavedTicketCodes().length)setTimeout(()=>loadMyBets().catch(e=>console.warn("Pending payment reminder bootstrap failed",e)),900);
 </script>
 <div id="shareSheetBackdrop" class="shareSheetBackdrop" aria-hidden="true" onclick="if(event.target===this)closeBetShare()">
   <div class="shareSheet" role="dialog" aria-modal="true" aria-labelledby="shareSheetTitle" onclick="event.stopPropagation()">
