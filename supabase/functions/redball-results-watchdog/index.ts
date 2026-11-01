@@ -36,6 +36,30 @@ Object.assign(teams,{
 'מונאקו':{country:'FRA',aliases:['Monaco','AS Monaco']}
 })
 
+
+Object.assign(teams,{
+'המבורג':{country:'DEU',aliases:['Hamburger SV','Hamburg','HSV']},
+'איינטרכט פרנקפורט':{country:'DEU',aliases:['Eintracht Frankfurt','Frankfurt']},
+'דורטמונד':{country:'DEU',aliases:['Borussia Dortmund','Dortmund']},
+'ורדר ברמן':{country:'DEU',aliases:['Werder Bremen','SV Werder Bremen','Werder']},
+'פרייבורג':{country:'DEU',aliases:['SC Freiburg','Freiburg']},
+'וולפסבורג':{country:'DEU',aliases:['VfL Wolfsburg','Wolfsburg']},
+'מילאן':{country:'ITA',aliases:['AC Milan','Milan']},
+'בולוניה':{country:'ITA',aliases:['Bologna','Bologna FC','Bologna FC 1909']},
+"מנצ'סטר סיטי":{country:'ENG',aliases:['Manchester City','Man City']},
+'ברייטון':{country:'ENG',aliases:['Brighton','Brighton & Hove Albion','Brighton and Hove Albion']},
+'בורנמות\'':{country:'ENG',aliases:['AFC Bournemouth','Bournemouth']},
+'אסטון וילה':{country:'ENG',aliases:['Aston Villa']},
+'פולהאם':{country:'ENG',aliases:['Fulham','Fulham FC']},
+'קריסטל פאלאס':{country:'ENG',aliases:['Crystal Palace','Crystal Palace FC']},
+'ליברפול':{country:'ENG',aliases:['Liverpool','Liverpool FC']},
+'צ\'לסי':{country:'ENG',aliases:['Chelsea','Chelsea FC']},
+'פיורנטינה':{country:'ITA',aliases:['Fiorentina','ACF Fiorentina']},
+'אטאלנטה':{country:'ITA',aliases:['Atalanta','Atalanta BC']},
+'אברטון':{country:'ENG',aliases:['Everton','Everton FC']},
+'ניוקאסל':{country:'ENG',aliases:['Newcastle United','Newcastle','Newcastle United FC']}
+})
+
 const nationalTeams:Record<string,{country:string,aliases:string[]}>={
 'ישראל':{country:'ISR',aliases:['Israel']},'ספרד':{country:'ESP',aliases:['Spain']},'צרפת':{country:'FRA',aliases:['France']},'גרמניה':{country:'DEU',aliases:['Germany']},'איטליה':{country:'ITA',aliases:['Italy']},'אנגליה':{country:'ENG',aliases:['England']},'פורטוגל':{country:'PRT',aliases:['Portugal']},'הולנד':{country:'NLD',aliases:['Netherlands']},'בלגיה':{country:'BEL',aliases:['Belgium']},'קרואטיה':{country:'HRV',aliases:['Croatia']},'דנמרק':{country:'DNK',aliases:['Denmark']},'שוויץ':{country:'CHE',aliases:['Switzerland']},'אוסטריה':{country:'AUT',aliases:['Austria']},'נורווגיה':{country:'NOR',aliases:['Norway']},'שוודיה':{country:'SWE',aliases:['Sweden']},'פולין':{country:'POL',aliases:['Poland']},'יוון':{country:'GRC',aliases:['Greece']},'טורקיה':{country:'TUR',aliases:['Turkey','Türkiye']},'סרביה':{country:'SRB',aliases:['Serbia']},'אוקראינה':{country:'UKR',aliases:['Ukraine']},'צכיה':{country:'CZE',aliases:['Czech Republic','Czechia']},'אירלנד':{country:'IRL',aliases:['Republic of Ireland','Ireland']},'סקוטלנד':{country:'SCO',aliases:['Scotland']},'ויילס':{country:'WAL',aliases:['Wales']},'ארגנטינה':{country:'ARG',aliases:['Argentina']},'ברזיל':{country:'BRA',aliases:['Brazil']},'אורוגוואי':{country:'URY',aliases:['Uruguay']},'קולומביה':{country:'COL',aliases:['Colombia']},'ארה"ב':{country:'USA',aliases:['USA','United States']},'מקסיקו':{country:'MEX',aliases:['Mexico']},'יפן':{country:'JPN',aliases:['Japan']},'דרום קוריאה':{country:'KOR',aliases:['Korea Republic','South Korea']},'מרוקו':{country:'MAR',aliases:['Morocco']},'מצרים':{country:'EGY',aliases:['Egypt']},'ניגריה':{country:'NGA',aliases:['Nigeria']},'גאנה':{country:'GHA',aliases:['Ghana']},'סלובניה':{country:'SVN',aliases:['Slovenia']},'צפון מקדוניה':{country:'MKD',aliases:['North Macedonia','North Macedonia FYR','FYR Macedonia']},'אלבניה':{country:'ALB',aliases:['Albania']},'סן מרינו':{country:'SMR',aliases:['San Marino']},'בלארוס':{country:'BLR',aliases:['Belarus']},'פינלנד':{country:'FIN',aliases:['Finland']},'קזחסטן':{country:'KAZ',aliases:['Kazakhstan']},'איי פארו':{country:'FRO',aliases:['Faroe Islands','Faroe Islands']},'מולדובה':{country:'MDA',aliases:['Moldova']},'סלובקיה':{country:'SVK',aliases:['Slovakia']},'אסטוניה':{country:'EST',aliases:['Estonia']},'איסלנד':{country:'ISL',aliases:['Iceland']},'לוקסמבורג':{country:'LUX',aliases:['Luxembourg']},'בולגריה':{country:'BGR',aliases:['Bulgaria']}
 }
@@ -182,6 +206,40 @@ Deno.serve(async(req)=>{
        }
      }
    }
+
+   // Israeli Premier League fallback when ESPN has no league mapping and TheSportsDB misses the final.
+   try{
+     const israeliPending=pending.filter((g:any)=>String(g.league_name||'')==='Israeli Premier League'&&!resolved.some((x:any)=>x.id===g.id))
+     if(israeliPending.length){
+       const fr=await fetch('https://www.thefishy.net/football-results.php?table=326',{headers:{'user-agent':'Mozilla/5.0 RedBallResultsWatchdog/1.0','accept':'text/html,application/xhtml+xml'}})
+       if(fr.ok){
+         const html=await fr.text()
+         const strip=(v:string)=>v.replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&nbsp;/g,' ').replace(/&#8209;/g,'-').replace(/\s+/g,' ').trim()
+         for(const g of israeliPending){
+           const d=new Date(g.starts_at)
+           const localParts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jerusalem',weekday:'short',day:'2-digit',month:'short',year:'numeric'}).formatToParts(d)
+           const part=(type:string)=>localParts.find((x:any)=>x.type===type)?.value||''
+           const label=part('weekday')+' '+part('day')+'-'+part('month')+'-'+part('year')
+           const head="<tr class='success'><th colspan='5'>"+label+"</th></tr>"
+           const start=html.indexOf(head)
+           if(start<0)continue
+           const next=html.indexOf("<tr class='success'>",start+head.length)
+           const section=html.slice(start,next>start?next:Math.min(html.length,start+12000))
+           const rowRe=/<tr class='cats'><td>[^<]*<\/td><td class='home'>([\s\S]*?)<\/td><td class='catsc'>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><td/gi
+           let m:any
+           while((m=rowRe.exec(section))){
+             const home=strip(m[1]),scoreText=strip(m[2]),away=strip(m[3]),sm=scoreText.match(/(\d+)\s*-\s*(\d+)/)
+             if(!sm)continue
+             if(nameScore(g.home_team,home)<2||nameScore(g.away_team,away)<2)continue
+             const hg=Number(sm[1]),ag=Number(sm[2]),res=resultFromScore(hg,ag),nowIso=new Date().toISOString()
+             const {data:upd}=await s.from('betting_games').update({result:res,api_home_goals:hg,api_away_goals:ag,api_status:'FT',api_last_synced_at:nowIso,result_set_at:nowIso,result_set_by:'WATCHDOG_ISRAEL_FALLBACK',needs_review:false,review_reason:null,review_marked_at:null,verification_note:'Final result verified by Israeli league fallback'}).eq('id',g.id).is('result',null).select('id,home_team,away_team,result,api_home_goals,api_away_goals')
+             if(upd?.length)resolved.push(...upd)
+             break
+           }
+         }
+       }
+     }
+   }catch(e){console.error('Israeli watchdog fallback failed',e)}
 
    const unresolved=pending.filter((g:any)=>!resolved.some((x:any)=>x.id===g.id))
    const bySports=new Map<string,any[]>()
