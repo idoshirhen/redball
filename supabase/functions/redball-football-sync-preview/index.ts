@@ -6,7 +6,7 @@ const uaOf=(req:Request)=>String(req.headers.get('user-agent')||'unknown').slice
 
 type TeamMap={country:string,aliases:string[]}
 const teams:Record<string,TeamMap>={
-'לאנס':{country:'FRA',aliases:['RC Lens','Lens']},'ספורטינג ליסבון':{country:'PRT',aliases:['Sporting CP','Sporting Clube de Portugal']},'סבאח':{country:'AZE',aliases:['Sabah FK']},'סלביה פראג':{country:'CZE',aliases:['Slavia Praha','SK Slavia Praha']},'ארסנל':{country:'ENG',aliases:['Arsenal FC','Arsenal']},'ליל':{country:'FRA',aliases:['LOSC Lille','Lille OSC','Lille']},'גלאטסראיי':{country:'TUR',aliases:['Galatasaray']},'ברצלונה':{country:'ESP',aliases:['FC Barcelona','Barcelona']},'ר.ב לייפציג':{country:'DEU',aliases:['RB Leipzig']},'ר.ב. לייפציג':{country:'DEU',aliases:['RB Leipzig']},'פ.ס.וו איינדהובן':{country:'NLD',aliases:['PSV Eindhoven','PSV']},'ויקינג':{country:'NOR',aliases:['Viking FK','Viking']},'באיירן מינכן':{country:'DEU',aliases:['Bayern München','Bayern Munich']},'אינטר':{country:'ITA',aliases:['Inter','Inter Milan']},"ברוז'":{country:'BEL',aliases:['Club Brugge KV','Club Brugge']},"קלאב ברוז'":{country:'BEL',aliases:['Club Brugge KV','Club Brugge']},'אתלטיקו מדריד':{country:'ESP',aliases:['Atlético Madrid','Atletico Madrid']},"מנצ'סטר יונייטד":{country:'ENG',aliases:['Manchester United']},'ויאריאל':{country:'ESP',aliases:['Villarreal CF','Villarreal']},'נאפולי':{country:'ITA',aliases:['SSC Napoli','Napoli']},"פנרבחצ'ה":{country:'TUR',aliases:['Fenerbahçe','Fenerbahce']},'דורטמונד':{country:'DEU',aliases:['Borussia Dortmund']},'בורוסיה דורטמונד':{country:'DEU',aliases:['Borussia Dortmund']},'שטוטגרט':{country:'DEU',aliases:['VfB Stuttgart','Stuttgart']},"פריז סן ז'רמן":{country:'FRA',aliases:['Paris Saint-Germain','Paris SG','PSG']},'בודו גלימט':{country:'NOR',aliases:['FK Bodø/Glimt','Bodø/Glimt','Bodo/Glimt']},'בודה/גלימט':{country:'NOR',aliases:['FK Bodø/Glimt','Bodø/Glimt','Bodo/Glimt']},'ליברפול':{country:'ENG',aliases:['Liverpool FC','Liverpool']},'פורטו':{country:'PRT',aliases:['FC Porto','Porto']},'רומא':{country:'ITA',aliases:['AS Roma','Roma']},'סלובן ברטיסלבה':{country:'SVK',aliases:['Slovan Bratislava','ŠK Slovan Bratislava']},"מנצ'סטר סיטי":{country:'ENG',aliases:['Manchester City']},'א.א.ק אתונה':{country:'GRC',aliases:['AEK Athens','AEK Athens FC']},'קומו':{country:'ITA',aliases:['Como 1907','Como']},'לאסק':{country:'AUT',aliases:['LASK Linz','LASK']},'לאסק לינץ':{country:'AUT',aliases:['LASK Linz','LASK']},'אסטון וילה':{country:'ENG',aliases:['Aston Villa']},'ריאל מדריד':{country:'ESP',aliases:['Real Madrid']},'שחטאר דונייצק':{country:'UKR',aliases:['Shakhtar Donetsk','FC Shakhtar Donetsk']},'ריאל בטיס':{country:'ESP',aliases:['Real Betis']},'פיינורד':{country:'NLD',aliases:['Feyenoord Rotterdam','Feyenoord']},'אויפן':{country:'BEL',aliases:['KAS Eupen','AS Eupen','Eupen']},'אלמניה אאכן':{country:'DEU',aliases:['Alemannia Aachen']},'יאן רגנסבורג':{country:'DEU',aliases:['SSV Jahn Regensburg','Jahn Regensburg']},'WSG טירול':{country:'AUT',aliases:['WSG Tirol','WSG Wattens']},'גרויטר פירת':{country:'DEU',aliases:['SpVgg Greuther Fürth','Greuther Fürth','Greuther Furth']},'סאוטה':{country:'ESP',aliases:['AD Ceuta FC','Ceuta']}
+'לאנס':{country:'FRA',aliases:['RC Lens','Lens']},'ספורטינג ליסבון':{country:'PRT',aliases:['Sporting CP','Sporting Clube de Portugal']},'סבאח':{country:'AZE',aliases:['Sabah FK']},'סלביה פראג':{country:'CZE',aliases:['Slavia Praha','SK Slavia Praha','Slavia Prague']},'ארסנל':{country:'ENG',aliases:['Arsenal FC','Arsenal']},'ליל':{country:'FRA',aliases:['LOSC Lille','Lille OSC','Lille']},'גלאטסראיי':{country:'TUR',aliases:['Galatasaray']},'ברצלונה':{country:'ESP',aliases:['FC Barcelona','Barcelona']},'ר.ב לייפציג':{country:'DEU',aliases:['RB Leipzig']},'ר.ב. לייפציג':{country:'DEU',aliases:['RB Leipzig']},'פ.ס.וו איינדהובן':{country:'NLD',aliases:['PSV Eindhoven','PSV']},'ויקינג':{country:'NOR',aliases:['Viking FK','Viking']},'באיירן מינכן':{country:'DEU',aliases:['Bayern München','Bayern Munich']},'אינטר':{country:'ITA',aliases:['Inter','Inter Milan']},"ברוז'":{country:'BEL',aliases:['Club Brugge KV','Club Brugge']},"קלאב ברוז'":{country:'BEL',aliases:['Club Brugge KV','Club Brugge']},'אתלטיקו מדריד':{country:'ESP',aliases:['Atlético Madrid','Atletico Madrid']},"מנצ'סטר יונייטד":{country:'ENG',aliases:['Manchester United']},'ויאריאל':{country:'ESP',aliases:['Villarreal CF','Villarreal']},'נאפולי':{country:'ITA',aliases:['SSC Napoli','Napoli']},"פנרבחצ'ה":{country:'TUR',aliases:['Fenerbahçe','Fenerbahce']},'דורטמונד':{country:'DEU',aliases:['Borussia Dortmund']},'בורוסיה דורטמונד':{country:'DEU',aliases:['Borussia Dortmund']},'שטוטגרט':{country:'DEU',aliases:['VfB Stuttgart','Stuttgart']},"פריז סן ז'רמן":{country:'FRA',aliases:['Paris Saint-Germain','Paris SG','PSG']},'בודו גלימט':{country:'NOR',aliases:['FK Bodø/Glimt','Bodø/Glimt','Bodo/Glimt']},'בודה/גלימט':{country:'NOR',aliases:['FK Bodø/Glimt','Bodø/Glimt','Bodo/Glimt']},'ליברפול':{country:'ENG',aliases:['Liverpool FC','Liverpool']},'פורטו':{country:'PRT',aliases:['FC Porto','Porto']},'רומא':{country:'ITA',aliases:['AS Roma','Roma']},'סלובן ברטיסלבה':{country:'SVK',aliases:['Slovan Bratislava','ŠK Slovan Bratislava']},"מנצ'סטר סיטי":{country:'ENG',aliases:['Manchester City']},'א.א.ק אתונה':{country:'GRC',aliases:['AEK Athens','AEK Athens FC']},'קומו':{country:'ITA',aliases:['Como 1907','Como']},'לאסק':{country:'AUT',aliases:['LASK Linz','LASK']},'לאסק לינץ':{country:'AUT',aliases:['LASK Linz','LASK']},'אסטון וילה':{country:'ENG',aliases:['Aston Villa']},'ריאל מדריד':{country:'ESP',aliases:['Real Madrid']},'שחטאר דונייצק':{country:'UKR',aliases:['Shakhtar Donetsk','FC Shakhtar Donetsk']},'ריאל בטיס':{country:'ESP',aliases:['Real Betis']},'פיינורד':{country:'NLD',aliases:['Feyenoord Rotterdam','Feyenoord']},'אויפן':{country:'BEL',aliases:['KAS Eupen','AS Eupen','Eupen']},'אלמניה אאכן':{country:'DEU',aliases:['Alemannia Aachen']},'יאן רגנסבורג':{country:'DEU',aliases:['SSV Jahn Regensburg','Jahn Regensburg']},'WSG טירול':{country:'AUT',aliases:['WSG Tirol','WSG Wattens']},'גרויטר פירת':{country:'DEU',aliases:['SpVgg Greuther Fürth','Greuther Fürth','Greuther Furth']},'סאוטה':{country:'ESP',aliases:['AD Ceuta FC','Ceuta']}
 ,'ורדר ברמן':{country:'DEU',aliases:['Werder','Werder Bremen','SV Werder Bremen']},'ליון':{country:'FRA',aliases:['Olympique Lyon','Olympique Lyonnais','Lyon']},'מלאגה':{country:'ESP',aliases:['Malaga CF','Málaga CF','Malaga']},'אספניול':{country:'ESP',aliases:['Espanyol Barcelona','RCD Espanyol','Espanyol']},'לידס':{country:'ENG',aliases:['Leeds','Leeds United','Leeds United FC']},'טוטנהאם':{country:'ENG',aliases:['Tottenham Hotspur','Tottenham']},'צ\'לסי':{country:'ENG',aliases:['Chelsea FC','Chelsea']},'בורנמות\'':{country:'ENG',aliases:['AFC Bournemouth','Bournemouth']},'אוגסבורג':{country:'DEU',aliases:['FC Augsburg','Augsburg']},'חטאפה':{country:'ESP',aliases:['Getafe CF','Getafe']},'פארמה':{country:'ITA',aliases:['Parma Calcio','Parma']},'פרוזינונה':{country:'ITA',aliases:['Frosinone Calcio','Frosinone']},'לה מאן':{country:'FRA',aliases:['Le Mans FC','Le Mans']},'ססואולו':{country:'ITA',aliases:['Sassuolo Calcio','US Sassuolo','Sassuolo']},'מילאן':{country:'ITA',aliases:['AC Milan','Milan']},'קליארי':{country:'ITA',aliases:['Cagliari Calcio','Cagliari']},'יובנטוס':{country:'ITA',aliases:['Juventus Turin','Juventus FC','Juventus']},'טרואה':{country:'FRA',aliases:['ESTAC Troyes','Troyes']},'מארסיי':{country:'FRA',aliases:['Olympique Marseille','Olympique de Marseille','Marseille']},'אוסאסונה':{country:'ESP',aliases:['CA Osasuna','Osasuna']},'ראסינג סנטנדר':{country:'ESP',aliases:['Racing Santander','Racing de Santander']},'ולנסיה':{country:'ESP',aliases:['Valencia CF','Valencia']}}
 
 Object.assign(teams,{
@@ -58,6 +58,21 @@ Object.assign(teams,{
 'אטאלנטה':{country:'ITA',aliases:['Atalanta','Atalanta BC']},
 'אברטון':{country:'ENG',aliases:['Everton','Everton FC']},
 'ניוקאסל':{country:'ENG',aliases:['Newcastle United','Newcastle','Newcastle United FC']}
+})
+
+Object.assign(teams,{
+'מיינץ':{country:'DEU',aliases:['Mainz','Mainz 05','1. FSV Mainz 05','FSV Mainz 05']},
+'האל סיטי':{country:'ENG',aliases:['Hull City','Hull City AFC']},
+'נוטינגהאם פורסט':{country:'ENG',aliases:['Nottingham Forest','Nottm Forest']},
+'לאציו':{country:'ITA',aliases:['Lazio','SS Lazio']},
+'סנדרלנד':{country:'ENG',aliases:['Sunderland','Sunderland AFC']}
+})
+
+Object.assign(teams,{
+'נורבגיה':{country:'NOR',aliases:['Norway']},
+'קלן':{country:'DEU',aliases:['FC Cologne','1. FC Köln','1. FC Koln','Cologne']},
+'איפסוויץ':{country:'ENG',aliases:['Ipswich Town','Ipswich']},
+'ניס':{country:'FRA',aliases:['Nice','OGC Nice']}
 })
 
 const nationalTeams:Record<string,{country:string,aliases:string[]}>={
@@ -136,12 +151,15 @@ Deno.serve(async(req)=>{
   const localClock=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()),[localHour,localMinute]=localClock.split(':').map(Number)
   let linkCandidates:any[]=[]
   {
-    let q=s.from('betting_games').select('id,home_team,away_team,starts_at,elo_status,api_link_status,api_fixture_id,result,league_name').is('result',null).neq('league_name','UFC').or('api_fixture_id.is.null,api_link_status.neq.verified')
+    // Fetch unresolved games broadly, then apply link eligibility in code.
+    // This avoids PostgREST NULL/OR edge cases that previously skipped games with no Fixture ID.
+    let q=s.from('betting_games').select('id,home_team,away_team,starts_at,elo_status,api_link_status,api_fixture_id,result,league_name').is('result',null).not('starts_at','is',null)
     if(!requestedDate)q=q.gte('starts_at',new Date(Date.now()-12*60*60*1000).toISOString())
-    const {data:missingLinks,error:mle}=await q
+    const {data:unresolvedGames,error:mle}=await q
     if(mle)throw mle
-    linkCandidates=(missingLinks||[]).filter((g:any)=>{
-      if(!g.starts_at)return false
+    linkCandidates=(unresolvedGames||[]).filter((g:any)=>{
+      if(String(g.league_name||'').toUpperCase()==='UFC')return false
+      if(g.api_fixture_id!=null&&String(g.api_link_status||'')==='verified')return false
       const d=localDate(g.starts_at)
       return requestedDate?d===date:[today,tomorrow].includes(d)
     })
@@ -161,10 +179,106 @@ Deno.serve(async(req)=>{
       const fid=Number(fx.fixture?.id);if(!fid)continue
       const canonicalStart=fx.fixture?.date?new Date(fx.fixture.date).toISOString():g.starts_at
       const originalStart=new Date(g.starts_at).getTime(),canonicalMs=new Date(canonicalStart).getTime(),timeCorrected=Number.isFinite(originalStart)&&Number.isFinite(canonicalMs)&&Math.abs(originalStart-canonicalMs)>60*1000
-      const {error:ue}=await s.from('betting_games').update({starts_at:canonicalStart,api_provider:'api-football',api_fixture_id:fid,api_link_status:'verified',api_home_name:fx.teams?.home?.name||null,api_away_name:fx.teams?.away?.name||null,api_status:String(fx.fixture?.status?.short||'NS'),league_name:fx.league?.name||null,verification_note:(g.elo_status==='verified'?'Elo מאומת + API-Football מאומתים':'API-Football מאומת; ממתין ל-Elo')+(timeCorrected?' | שעת פתיחה תוקנה אוטומטית לפי API-Football':'')}).eq('id',g.id)
+      const {error:ue}=await s.from('betting_games').update({starts_at:canonicalStart,api_provider:'api-football',api_fixture_id:fid,api_link_status:'verified',api_home_name:fx.teams?.home?.name||null,api_away_name:fx.teams?.away?.name||null,api_status:String(fx.fixture?.status?.short||'NS'),league_name:fx.league?.name||null,needs_review:false,review_reason:null,review_marked_at:null,verification_note:(g.elo_status==='verified'?'Elo מאומת + API-Football מאומתים':'API-Football מאומת; ממתין ל-Elo')+(timeCorrected?' | שעת פתיחה תוקנה אוטומטית לפי API-Football':'')}).eq('id',g.id)
       if(!ue)linked.push({id:g.id,home_team:g.home_team,away_team:g.away_team,fixture_id:fid,time_corrected:timeCorrected,starts_at:canonicalStart})
     }
   }
+  // ESPN pre-link fallback: if API-Football is unavailable/suspended, attach a stable ESPN event ID,
+  // canonical kickoff time and official team names before the match starts.
+  const espn_linked:any[]=[]
+  try{
+    const espnSlug:Record<string,string>={
+      'UEFA Champions League':'uefa.champions',
+      'UEFA Nations League':'uefa.nations',
+      'Premier League':'eng.1',
+      'LaLiga':'esp.1','La Liga':'esp.1',
+      'Serie A':'ita.1','Bundesliga':'ger.1','Ligue 1':'fra.1',
+      'EFL Cup':'eng.league_cup','Carabao Cup':'eng.league_cup','גביע הליגה האנגלי':'eng.league_cup',
+      'DFB-Pokal':'ger.dfb_pokal','גביע גרמני':'ger.dfb_pokal',
+      'FIFA World Cup Qualifying - UEFA':'fifa.worldq.uefa',
+      'International Friendly':'fifa.friendly',
+      'UEFA European Championship Qualifying':'uefa.euro.qualifying'
+    }
+    let stillUnlinked:any[]=[]
+    if(requestedDate){
+      stillUnlinked=linkCandidates.filter((g:any)=>!linked.some((x:any)=>x.id===g.id))
+    }else{
+      const horizon=new Date(Date.now()+7*24*60*60*1000).toISOString()
+      const {data:futureRows,error:futureErr}=await s.from('betting_games')
+        .select('id,home_team,away_team,starts_at,elo_status,api_link_status,api_fixture_id,result,league_name')
+        .is('result',null).not('starts_at','is',null)
+        .gte('starts_at',new Date(Date.now()-12*60*60*1000).toISOString()).lte('starts_at',horizon)
+      if(futureErr)throw futureErr
+      stillUnlinked=(futureRows||[]).filter((g:any)=>String(g.league_name||'').toUpperCase()!=='UFC'&&!(g.api_fixture_id!=null&&String(g.api_link_status||'')==='verified'))
+    }
+    const groups=new Map<string,any[]>()
+    for(const g of stillUnlinked){
+      const slug=espnSlug[String(g.league_name||'')]
+      if(!slug)continue
+      const d=localDate(g.starts_at),endpoint='https://site.api.espn.com/apis/site/v2/sports/soccer/'+slug+'/scoreboard?dates='+d.replace(/-/g,'')
+      if(!groups.has(endpoint))groups.set(endpoint,[])
+      groups.get(endpoint)!.push(g)
+    }
+    for(const [endpoint,group] of groups){
+      const er=await fetch(endpoint,{headers:{'user-agent':'Mozilla/5.0 RedBallLinker/1.0','accept':'application/json'}})
+      if(!er.ok)continue
+      const ed=await er.json().catch(()=>({}))
+      const cands:any[]=[]
+      for(const ev of (Array.isArray(ed.events)?ed.events:[])){
+        for(const comp of (Array.isArray(ev?.competitions)?ev.competitions:[])){
+          const competitors=Array.isArray(comp?.competitors)?comp.competitors:[]
+          const home=competitors.find((x:any)=>x?.homeAway==='home'),away=competitors.find((x:any)=>x?.homeAway==='away')
+          if(!home||!away)continue
+          const rawId=String(ev?.id||comp?.id||''),eventId=/^\d+$/.test(rawId)?Number(rawId):null
+          const eventDate=comp?.date||ev?.date||null
+          if(!eventId||!eventDate)continue
+          cands.push({
+            id:eventId,date:eventDate,
+            home:String(home?.team?.displayName||home?.team?.name||''),
+            away:String(away?.team?.displayName||away?.team?.name||''),
+            status:String(comp?.status?.type?.name||comp?.status?.type?.state||'NS')
+          })
+        }
+      }
+      for(const g of group){
+        const ranked=cands.map((x:any)=>({x,hs:nameScore(g.home_team,x.home),as:nameScore(g.away_team,x.away),dt:Math.abs(new Date(x.date).getTime()-new Date(g.starts_at).getTime())}))
+          .filter((r:any)=>r.hs>=2&&r.as>=2)
+          .sort((a:any,b:any)=>(b.hs+b.as)-(a.hs+a.as)||a.dt-b.dt)
+        const best=ranked[0];if(!best)continue
+        const canonicalStart=new Date(best.x.date).toISOString()
+        const timeCorrected=Math.abs(new Date(g.starts_at).getTime()-new Date(canonicalStart).getTime())>60*1000
+        const {error:ue}=await s.from('betting_games').update({
+          starts_at:canonicalStart,api_provider:'espn',api_fixture_id:best.x.id,api_link_status:'verified',
+          api_home_name:best.x.home,api_away_name:best.x.away,api_status:best.x.status,
+          needs_review:false,review_reason:null,review_marked_at:null,
+          verification_note:(g.elo_status==='verified'?'Elo מאומת + ESPN מאומת':'ESPN מאומת; ממתין ל-Elo')+(timeCorrected?' | שעת פתיחה תוקנה אוטומטית לפי ESPN':'')
+        }).eq('id',g.id)
+        if(!ue)espn_linked.push({id:g.id,home_team:g.home_team,away_team:g.away_team,fixture_id:best.x.id,time_corrected:timeCorrected,starts_at:canonicalStart})
+      }
+    }
+  }catch(e){console.error('ESPN pre-link failed',e)}
+
+  // Preflight guard: unresolved games inside 24h of kickoff must never fail silently.
+  try{
+    const cutoff=new Date(Date.now()+24*60*60*1000).toISOString()
+    const {data:preRows,error:preErr}=await s.from('betting_games')
+      .select('id,home_team,away_team,starts_at,api_fixture_id,api_link_status,league_name,result')
+      .is('result',null).not('starts_at','is',null)
+      .gte('starts_at',new Date().toISOString()).lte('starts_at',cutoff)
+    if(preErr)throw preErr
+    for(const g of preRows||[]){
+      if(String(g.league_name||'').toUpperCase()==='UFC')continue
+      const verified=g.api_fixture_id!=null&&String(g.api_link_status||'')==='verified'
+      if(!verified){
+        await s.from('betting_games').update({
+          needs_review:true,
+          review_reason:'פחות מ-24 שעות לפתיחת המשחק ואין קישור מאומת לספק תוצאות',
+          review_marked_at:new Date().toISOString()
+        }).eq('id',g.id)
+      }
+    }
+  }catch(e){console.error('Preflight link audit failed',e)}
+
   // Fallback for Israeli Premier League final results when API-Football is unavailable/suspended.
   const fallback_updated:any[]=[]
   try{
@@ -530,7 +644,7 @@ Deno.serve(async(req)=>{
     if(requestedDate&&d!==date)return false
     return t<=nowMs && t>=nowMs-staleMs
   })
-  if(!target.length){const [auto_archived,auto_cancelled_unpaid,stale_unresolved]=await Promise.all([autoArchiveCompletedSessions(),expireUnpaidBets(),markStaleUnresolved()]);return json({ok:true,date,count:0,updated:[],linked,linked_count:linked.length,fallback_updated,uefa_fallback_updated,espn_fallback_updated,sportsdb_fallback_updated,stale_unresolved,auto_archived,auto_cancelled_unpaid,quota_guard:{skipped:true,reason:'no_target_games'}})}
+  if(!target.length){const [auto_archived,auto_cancelled_unpaid,stale_unresolved]=await Promise.all([autoArchiveCompletedSessions(),expireUnpaidBets(),markStaleUnresolved()]);return json({ok:true,date,count:0,updated:[],linked,linked_count:linked.length,espn_linked,espn_linked_count:espn_linked.length,link_candidates_count:linkCandidates.length,link_debug:requestedDate?link_debug:undefined,fallback_updated,uefa_fallback_updated,espn_fallback_updated,sportsdb_fallback_updated,stale_unresolved,auto_archived,auto_cancelled_unpaid,quota_guard:{skipped:true,reason:'no_target_games'}})}
 
   const utcDay=new Date().toISOString().slice(0,10)
   const {data:quotaState}=await s.from('football_api_quota_state').select('*').eq('provider','api-football').maybeSingle()
@@ -593,6 +707,6 @@ Deno.serve(async(req)=>{
   let auto_archived:any[]=[],auto_cancelled_unpaid:any[]=[],stale_unresolved:any[]=[]
   // Keep cron maintenance on GET. A manual button press only pulls and settles results.
   if(req.method==='GET')[auto_archived,auto_cancelled_unpaid,stale_unresolved]=await Promise.all([autoArchiveCompletedSessions(),expireUnpaidBets(),markStaleUnresolved()])
-  return json({ok:errors.length===0,date,dates,api_results:apiResults,count:updated.length,updated,linked,linked_count:linked.length,fallback_updated,uefa_fallback_updated,espn_fallback_updated,sportsdb_fallback_updated,stale_unresolved,auto_archived,auto_cancelled_unpaid,errors,quota_guard:{remaining:lastRemaining,quota_limit:lastLimit,protected:true},manual_triggered_by:manualRole||null},errors.length?502:200)
+  return json({ok:errors.length===0,date,dates,api_results:apiResults,count:updated.length,updated,linked,linked_count:linked.length,espn_linked,espn_linked_count:espn_linked.length,fallback_updated,uefa_fallback_updated,espn_fallback_updated,sportsdb_fallback_updated,stale_unresolved,auto_archived,auto_cancelled_unpaid,errors,quota_guard:{remaining:lastRemaining,quota_limit:lastLimit,protected:true},manual_triggered_by:manualRole||null},errors.length?502:200)
  }catch(e:any){console.error(e);return json({error:e?.message||'Server error'},500)}
 })
