@@ -90,6 +90,7 @@ const soccerSlug:Record<string,string>={
 const localDate=(value:string|Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value))
 const dateKey=(v:string)=>localDate(v).replace(/-/g,'')
 const resultFromScore=(h:number,a:number)=>h>a?'1':h<a?'2':'X'
+const inferLeagueFromSession=(explicit:string,sessionName:string)=>{const e=String(explicit||'').trim();if(e)return e;const n=String(sessionName||'');if(n.includes('ליגת אלופות'))return 'UEFA Champions League';if(n.includes('ליגת האומות'))return 'UEFA Nations League';if(/UFC/i.test(n))return 'UFC';return ''}
 
 async function fetchJson(url:string,timeout=7000){
   const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout)
@@ -173,9 +174,18 @@ Deno.serve(async(req)=>{
  await s.from('result_sync_health').upsert({id:'watchdog',last_started_at:started,last_ok:false,updated_at:started},{onConflict:'id'})
  try{
    const now=Date.now(),minAge=75*60*1000,maxAge=48*60*60*1000
-   const {data:rows,error}=await s.from('betting_games').select('id,home_team,away_team,starts_at,result,league_name').is('result',null).not('starts_at','is',null)
+   const [{data:rows,error},{data:roundRows,error:roundError}]=await Promise.all([
+     s.from('betting_games').select('id,round_no,home_team,away_team,starts_at,result,league_name').is('result',null).not('starts_at','is',null),
+     s.from('betting_rounds').select('round_no,name')
+   ])
    if(error)throw error
-   const pending=(rows||[]).filter((g:any)=>{const t=new Date(g.starts_at).getTime();return Number.isFinite(t)&&t<=now-minAge&&t>=now-maxAge})
+   if(roundError)throw roundError
+   const roundNames=new Map((roundRows||[]).map((r:any)=>[Number(r.round_no),String(r.name||'')]))
+   const normalizedRows=(rows||[]).map((g:any)=>({...g,league_name:inferLeagueFromSession(g.league_name,roundNames.get(Number(g.round_no))||'')}))
+   for(const g of normalizedRows.filter((x:any)=>x.league_name&&!String((rows||[]).find((r:any)=>r.id===x.id)?.league_name||'').trim())){
+     await s.from('betting_games').update({league_name:g.league_name,verification_note:'League auto-healed by results watchdog from session name'}).eq('id',g.id)
+   }
+   const pending=normalizedRows.filter((g:any)=>{const t=new Date(g.starts_at).getTime();return Number.isFinite(t)&&t<=now-minAge&&t>=now-maxAge})
    const providerStatus:any={espn:{requests:0,ok:0},sportsdb:{requests:0,ok:0}}
    const resolved:any[]=[]
    const byEndpoint=new Map<string,any[]>()
@@ -288,8 +298,8 @@ Deno.serve(async(req)=>{
      }
    }
 
-   const {data:stillRows}=await s.from('betting_games').select('id,home_team,away_team,starts_at,league_name').is('result',null).not('starts_at','is',null)
-   const still=(stillRows||[]).filter((g:any)=>{const t=new Date(g.starts_at).getTime();return Number.isFinite(t)&&t<=Date.now()-minAge&&t>=Date.now()-maxAge})
+   const {data:stillRows}=await s.from('betting_games').select('id,round_no,home_team,away_team,starts_at,league_name').is('result',null).not('starts_at','is',null)
+   const still=(stillRows||[]).map((g:any)=>({...g,league_name:inferLeagueFromSession(g.league_name,roundNames.get(Number(g.round_no))||'')})).filter((g:any)=>{const t=new Date(g.starts_at).getTime();return Number.isFinite(t)&&t<=Date.now()-minAge&&t>=Date.now()-maxAge})
    const finished=new Date().toISOString()
    await s.from('result_sync_health').upsert({id:'watchdog',last_started_at:started,last_finished_at:finished,last_ok:true,unresolved_count:still.length,resolved_count:resolved.length,provider_status:providerStatus,last_error:null,updated_at:finished},{onConflict:'id'})
    return json({ok:true,pending_count:pending.length,resolved_count:resolved.length,resolved,unresolved_count:still.length,unresolved:still,provider_status:providerStatus})
